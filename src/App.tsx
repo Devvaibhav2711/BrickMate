@@ -15,6 +15,8 @@ import Customers from "./pages/Customers";
 import Expenses from "./pages/Expenses";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -30,16 +32,19 @@ const App = () => (
           <BrowserRouter>
             <AppLayout>
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/labour" element={<Labour />} />
-                <Route path="/labour/:id" element={<LabourDetails />} />
-                <Route path="/daily-workers" element={<DailyWorkers />} />
-                <Route path="/production" element={<Production />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/customer/:id" element={<CustomerDetails />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/login" element={<Login />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/labour" element={<Labour />} />
+                  <Route path="/labour/:id" element={<LabourDetails />} />
+                  <Route path="/daily-workers" element={<DailyWorkers />} />
+                  <Route path="/production" element={<Production />} />
+                  <Route path="/customers" element={<Customers />} />
+                  <Route path="/customer/:id" element={<CustomerDetails />} />
+                  <Route path="/expenses" element={<Expenses />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
               </Routes>
             </AppLayout>
           </BrowserRouter>

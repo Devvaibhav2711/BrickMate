@@ -51,7 +51,7 @@ export const StatCard = ({
           <p className="text-sm text-muted-foreground font-medium truncate">
             {label}
           </p>
-          <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+          <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mt-0.5 break-words leading-tight">
             {value}
           </p>
           {subValue && (

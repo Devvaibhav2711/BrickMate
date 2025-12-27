@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useLabour, useAddWagePayment } from '@/hooks/useLabour';
+import { useLabour, useAddWagePayment, useDeleteLabour, Labour } from '@/hooks/useLabour';
 import { useAttendance, useMarkAttendance } from '@/hooks/useAttendance';
 import { useNavigate } from 'react-router-dom';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays } from 'date-fns';
@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle2, Plus, Edit2 } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle2, Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { FormattedNumberInput } from '@/components/shared/FormattedNumberInput';
 import { formatCurrency } from '@/lib/utils';
 import {
@@ -21,6 +21,22 @@ import {
     DialogDescription,
     DialogFooter,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import {
     Popover,
@@ -123,9 +139,12 @@ export const DailyWorkers = () => {
     const { data: attendance, isLoading: attendanceLoading } = useAttendance(weekStart, weekEnd);
     const markAttendance = useMarkAttendance();
     const addWagePayment = useAddWagePayment();
+    const deleteLabour = useDeleteLabour();
 
     // 3. UI States
     const [isAddWorkerOpen, setIsAddWorkerOpen] = useState(false);
+    const [editingLabour, setEditingLabour] = useState<Labour | null>(null);
+    const [labourToDelete, setLabourToDelete] = useState<Labour | null>(null);
 
     // Payment Dialog State
     const [paymentDialog, setPaymentDialog] = useState<{
@@ -208,9 +227,26 @@ export const DailyWorkers = () => {
             payment_date: format(new Date(), 'yyyy-MM-dd'),
             period_start: weekStartStr,
             period_end: weekEndStr,
+            worker_name: paymentDialog.workerName
         });
 
         setPaymentDialog(prev => ({ ...prev, isOpen: false }));
+    };
+
+    const handleEdit = (worker: Labour) => {
+        setEditingLabour(worker);
+        setIsAddWorkerOpen(true);
+    };
+
+    const handleDelete = (worker: Labour) => {
+        setLabourToDelete(worker);
+    };
+
+    const confirmDelete = async () => {
+        if (labourToDelete) {
+            await deleteLabour.mutateAsync(labourToDelete.id);
+            setLabourToDelete(null);
+        }
     };
 
 
@@ -243,7 +279,7 @@ export const DailyWorkers = () => {
                         </Button>
                     </div>
 
-                    <Button onClick={() => setIsAddWorkerOpen(true)} className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md">
+                    <Button onClick={() => { setEditingLabour(null); setIsAddWorkerOpen(true); }} className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md">
                         <Plus className="w-4 h-4" />
                         {t('addLabour')}
                     </Button>
@@ -257,7 +293,7 @@ export const DailyWorkers = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead className="w-[140px] sticky left-0 bg-background z-20 font-bold px-3 shadow-[1px_0_3px_rgba(0,0,0,0.1)]">{t('labourName')}</TableHead>
+                                    <TableHead className="w-[180px] sticky left-0 bg-background z-20 font-bold px-3 shadow-[1px_0_3px_rgba(0,0,0,0.1)]">{t('labourName')}</TableHead>
                                     <TableHead className="w-[60px] text-center font-bold text-primary px-1 text-xs">{t('totalDays')}</TableHead>
 
                                     {daysToDisplay.map(day => (
@@ -322,12 +358,38 @@ export const DailyWorkers = () => {
                                     return (
                                         <TableRow key={worker.id} className="group hover:bg-muted/30">
                                             <TableCell
-                                                className="font-medium sticky left-0 bg-background z-10 shadow-[1px_0_3px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-muted/50 transition-colors px-3 py-2"
-                                                onClick={() => navigate(`/labour/${worker.id}`)}
+                                                className="font-medium sticky left-0 bg-background z-10 shadow-[1px_0_3px_rgba(0,0,0,0.1)] px-3 py-2"
                                             >
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">{worker.name}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{formatCurrency(worker.daily_wage)}/day</span>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div
+                                                        className="flex flex-col cursor-pointer flex-1"
+                                                        onClick={() => navigate(`/labour/${worker.id}`)}
+                                                    >
+                                                        <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">{worker.name}</span>
+                                                        <span className="text-[10px] text-muted-foreground">{formatCurrency(worker.daily_wage)}/day</span>
+                                                    </div>
+
+                                                    {/* Actions Dropdown */}
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-6 w-6 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="start">
+                                                            <DropdownMenuItem onClick={() => handleEdit(worker)}>
+                                                                <Pencil className="w-4 h-4 mr-2" />
+                                                                Edit Details
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                onClick={() => handleDelete(worker)}
+                                                                className="text-destructive focus:text-destructive"
+                                                            >
+                                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                                Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 </div>
                                             </TableCell>
 
@@ -469,8 +531,33 @@ export const DailyWorkers = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Reuse Add Worker Dialog */}
-            <AddLabourDialog open={isAddWorkerOpen} onOpenChange={setIsAddWorkerOpen} />
+            {/* Confirm Delete Dialog */}
+            <AlertDialog open={!!labourToDelete} onOpenChange={(open) => !open && setLabourToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete <span className="font-bold text-foreground">{labourToDelete?.name}</span> and all their associated data (attendance, payments, etc.). This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete Worker
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            {/* Reuse Add/Edit Worker Dialog */}
+            <AddLabourDialog
+                open={isAddWorkerOpen}
+                onOpenChange={(open) => {
+                    setIsAddWorkerOpen(open);
+                    if (!open) setEditingLabour(null); // Reset on close
+                }}
+                labourToEdit={editingLabour}
+            />
 
         </div >
     );

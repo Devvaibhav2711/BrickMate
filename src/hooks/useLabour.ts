@@ -178,7 +178,8 @@ export const useAddWagePayment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ labour_id, amount, notes, payment_date, period_start, period_end }: { labour_id: string; amount: number; notes: string; payment_date: string; period_start?: string; period_end?: string }) => {
+    mutationFn: async ({ labour_id, amount, notes, payment_date, period_start, period_end, worker_name }: { labour_id: string; amount: number; notes: string; payment_date: string; period_start?: string; period_end?: string, worker_name?: string }) => {
+      // 1. Add Wage Payment
       const { data, error } = await supabase
         .from('wage_payments')
         .insert([{
@@ -186,19 +187,41 @@ export const useAddWagePayment = () => {
           amount,
           notes,
           payment_date,
-          period_start: period_start || payment_date, // Default to payment_date if not provided
-          period_end: period_end || payment_date      // Default to payment_date if not provided
+          period_start: period_start || payment_date,
+          period_end: period_end || payment_date
         }])
         .select()
         .single();
 
       if (error) throw error;
+
+      // 2. Add as Expense (Auto-entry)
+      try {
+        const description = `Wage Payment to ${worker_name || 'Worker'}. ${notes}`;
+        const { error: expenseError } = await supabase
+          .from('expenses')
+          .insert([{
+            category: 'labour',
+            amount,
+            date: payment_date,
+            description
+          }]);
+
+        if (expenseError) throw expenseError;
+      } catch (err: any) {
+        console.error("Failed to record expense:", err);
+        // We ensure the payment is recorded even if expense fails, but maybe show warning?
+        toast.warning("Payment saved, but failed to record as Expense.");
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['labour'] });
       queryClient.invalidateQueries({ queryKey: ['labour', variables.labour_id] });
-      toast.success('Payment added successfully');
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success('Payment added and recorded as Expense');
     },
     onError: (error) => {
       toast.error('Failed to add payment: ' + error.message);
