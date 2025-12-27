@@ -33,11 +33,14 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
     if (!sale) return null;
 
     // Ledger Logic
-    const customerSales = allSales
+    let customerSales = allSales
         ? allSales
             .filter(s => s.customer_id === sale.customer_id)
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         : [sale];
+
+    // Fallback if filter returns empty (should rarely happen but safe) or if allSales was empty array
+    if (customerSales.length === 0) customerSales = [sale];
 
     const totalAmount = customerSales.reduce((sum, s) => sum + s.total_amount, 0);
     const paidAmount = customerSales.reduce((sum, s) => sum + s.amount_paid, 0);
