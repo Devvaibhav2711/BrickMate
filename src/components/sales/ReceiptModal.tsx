@@ -20,15 +20,20 @@ interface ReceiptModalProps {
     sale: Sale | null;
     customerName?: string;
     customerMobile?: string;
+    receiptNo?: number;
 }
 
-export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile }: ReceiptModalProps) => {
+export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile, receiptNo }: ReceiptModalProps) => {
     const { t, language } = useLanguage();
     const receiptRef = useRef<HTMLDivElement>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const isMarathi = language === 'mr' || true; // Force Marathi layout primarily
 
     if (!sale) return null;
+
+    const displayReceiptNo = receiptNo
+        ? receiptNo.toString().padStart(4, '0')
+        : sale.id.slice(0, 6).toUpperCase();
 
     const generateImage = async () => {
         if (!receiptRef.current) return null;
@@ -84,7 +89,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
             const image = canvas.toDataURL("image/jpeg", 0.9);
             const link = document.createElement('a');
             link.href = image;
-            link.download = `Receipt_${customerName || 'Customer'}_${sale.id.slice(0, 6)}.jpg`;
+            link.download = `Receipt_${customerName || 'Customer'}_${displayReceiptNo}.jpg`;
             link.click();
             toast.success(isMarathi ? "पावती डाउनलोड झाली!" : "Receipt downloaded!");
         }
@@ -108,7 +113,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                 // Try Web Share API first (Mobile)
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'receipt.jpg', { type: 'image/jpeg' })] })) {
                     try {
-                        const file = new File([blob], `Receipt_${sale.id.slice(0, 6)}.jpg`, { type: 'image/jpeg' });
+                        const file = new File([blob], `Receipt_${displayReceiptNo}.jpg`, { type: 'image/jpeg' });
                         await navigator.share({
                             files: [file],
                             title: 'Payment Receipt',
@@ -126,7 +131,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     const image = canvas.toDataURL("image/jpeg", 0.9);
                     const link = document.createElement('a');
                     link.href = image;
-                    link.download = `Receipt_For_WhatsApp_${sale.id.slice(0, 6)}.jpg`;
+                    link.download = `Receipt_For_WhatsApp_${displayReceiptNo}.jpg`;
                     link.click();
 
                     toast.dismiss();
@@ -167,17 +172,18 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         style={{ aspectRatio: 'auto' }}
                     >
                         {/* Header Image */}
-                        <div className="mb-4">
-                            <img src="/receipt-header.png" alt="Header" className="w-full h-auto object-contain rounded-t-sm" />
+                        {/* Header Image Replacement */}
+                        <div className="mb-4 text-center">
+                            <h1 className="text-2xl font-black text-[#e11d48] uppercase tracking-widest border-b-4 border-[#e11d48] inline-block pb-1">BRICKSMATE</h1>
+                        </div>
 
-                            {/* Address & Contact (Below Image) */}
-                            <div className="text-center mt-2">
-                                <div className="text-sm font-medium text-gray-600">
-                                    {isMarathi ? 'मु. पो. कोळवाडी, ता. शिरुर' : 'At Post Kolwadi, Tq. Shirur'}
-                                </div>
-                                <div className="text-sm font-bold mt-1 text-black tracking-wide">
-                                    9921915464 <span className="text-gray-400 mx-1">|</span> 9075966464
-                                </div>
+                        {/* Address & Contact (Below Image) */}
+                        <div className="text-center mt-2">
+                            <div className="text-sm font-medium text-gray-600">
+                                {isMarathi ? 'मु. पो. कोळवाडी, ता. शिरुर' : 'At Post Kolwadi, Tq. Shirur'}
+                            </div>
+                            <div className="text-sm font-bold mt-1 text-black tracking-wide">
+                                9921915464 <span className="text-gray-400 mx-1">|</span> 9075966464
                             </div>
                         </div>
 
@@ -195,7 +201,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                             </div>
                             <div className="text-right space-y-1">
                                 <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider">{isMarathi ? 'पावती क्र.' : 'RECEIPT NO.'}</div>
-                                <div className="font-bold text-black font-mono">#{sale.id.slice(0, 6).toUpperCase()}</div>
+                                <div className="font-bold text-black font-mono">#{displayReceiptNo}</div>
                                 <div className="text-xs text-gray-500 mt-1">{isMarathi ? 'दिनांक' : 'DATE'}</div>
                                 <div className="font-medium">{format(new Date(sale.date), 'dd/MM/yyyy')}</div>
                             </div>

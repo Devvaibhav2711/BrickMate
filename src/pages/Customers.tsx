@@ -56,6 +56,7 @@ export const Customers = () => {
   const [isSaleSheetOpen, setIsSaleSheetOpen] = useState(false);
   const [receiptSale, setReceiptSale] = useState<Sale | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [receiptNo, setReceiptNo] = useState(0);
 
   const [customerForm, setCustomerForm] = useState<CustomerInsert>({
     name: '',
@@ -81,6 +82,13 @@ export const Customers = () => {
     if (!customerForm.name.trim()) newErrors.name = true;
     if (!customerForm.mobile) newErrors.mobile = true;
     if (!customerForm.address) newErrors.address = true;
+
+    if (customers?.some(c => c.mobile === customerForm.mobile)) {
+      toast.error(t('error') + ": Mobile number already exists!");
+      newErrors.mobile = true;
+      setCustomerErrors(newErrors);
+      return;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setCustomerErrors(newErrors);
@@ -120,20 +128,19 @@ export const Customers = () => {
       payment_status: status,
     });
 
-    // Set receipt data and open modal
-    // Note: addSale returns the inserted record. We need to optionally map customer details manually 
-    // or rely on the returned data if it includes relations (it uses .select().single()).
-    // Default insert select() usually doesn't return relations unless specified.
-    // So we assume newSale has basic info, and we find customer name from existing list.
     const selectedCustomer = customers?.find(c => c.id === saleForm.customer_id);
 
-    // Construct a full Sale object for the receipt (merging form data + id)
     const saleForReceipt: Sale = {
       ...newSale,
       customers: selectedCustomer ? { name: selectedCustomer.name, mobile: selectedCustomer.mobile } : null
-    } as unknown as Sale; // Casting because Supabase return type might be strict
+    } as unknown as Sale;
+
+    // Calculate Receipt No (Simple count based)
+    const currentTotalSales = sales?.length || 0;
+    const receiptNo = currentTotalSales + 1;
 
     setReceiptSale(saleForReceipt);
+    setReceiptNo(receiptNo); // New state
     setIsReceiptOpen(true);
 
     setSaleForm({
@@ -429,6 +436,7 @@ export const Customers = () => {
         sale={receiptSale}
         customerName={receiptSale?.customers?.name}
         customerMobile={receiptSale?.customers?.mobile || undefined}
+        receiptNo={receiptNo}
       />
     </div >
   );

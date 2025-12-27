@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAddLabour, useUpdateLabour, LabourInsert, Labour } from '@/hooks/useLabour';
+import { useAddLabour, useUpdateLabour, useLabour, LabourInsert, Labour } from '@/hooks/useLabour';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,12 +68,21 @@ export const AddLabourDialog = ({ open, onOpenChange, labourToEdit }: AddLabourD
         }
     }, [labourToEdit, open]);
 
+    const { data: labours } = useLabour();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors: Record<string, boolean> = {};
         if (!formData.name.trim()) newErrors.name = true;
         if (!formData.mobile) newErrors.mobile = true;
         if (!formData.address) newErrors.address = true;
+
+        if (formData.mobile && labours?.some(l => l.mobile === formData.mobile && l.id !== labourToEdit?.id)) {
+            toast.error(t('error') + ": Mobile number already exists");
+            newErrors.mobile = true;
+            setErrors(newErrors);
+            return;
+        }
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
