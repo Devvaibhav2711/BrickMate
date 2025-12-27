@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Printer, Phone, MapPin, Plus, Wallet } from 'lucide-react';
+import { ArrowLeft, Printer, Phone, MapPin, Plus, Wallet, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,6 +14,7 @@ import { Sale } from '@/hooks/useSales';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { formatCurrency } from '@/lib/utils';
 import { AddPaymentSheet } from '@/components/sales/AddPaymentSheet';
+import { ReceiptModal } from '@/components/sales/ReceiptModal';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,6 +35,7 @@ export const CustomerDetails = () => {
     const { t } = useLanguage();
 
     const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
+    const [isStatementOpen, setIsStatementOpen] = useState(false);
 
 
     // Fetch Customer Profile
@@ -177,11 +179,15 @@ export const CustomerDetails = () => {
                 <div className="flex gap-2">
                     <Button onClick={() => setIsPaymentSheetOpen(true)}>
                         <Wallet className="w-4 h-4 mr-2" />
-                        {t('paid')} {/* Using 'Paid' label or 'Receive Payment' */}
+                        {t('paid')}
                     </Button>
-                    <Button variant="outline" onClick={handlePrint}>
+                    <Button variant="outline" onClick={() => setIsStatementOpen(true)}>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        {t('statement') || 'Statement'}
+                    </Button>
+                    <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
                         <Printer className="w-4 h-4 mr-2" />
-                        {t('printStatement')}
+                        {t('printList') || 'Print List'}
                     </Button>
                 </div>
             </div>

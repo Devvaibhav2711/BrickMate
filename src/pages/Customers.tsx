@@ -54,9 +54,11 @@ export const Customers = () => {
   const [activeTab, setActiveTab] = useState('customers');
   const [isCustomerSheetOpen, setIsCustomerSheetOpen] = useState(false);
   const [isSaleSheetOpen, setIsSaleSheetOpen] = useState(false);
+  /* Removed duplicate saleForm, setSaleForm from line 57 */
   const [receiptSale, setReceiptSale] = useState<Sale | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [receiptNo, setReceiptNo] = useState(0);
+  const [isReceiptLedger, setIsReceiptLedger] = useState(false);
 
   const [customerForm, setCustomerForm] = useState<CustomerInsert>({
     name: '',
@@ -141,6 +143,7 @@ export const Customers = () => {
 
     setReceiptSale(saleForReceipt);
     setReceiptNo(receiptNo); // New state
+    setIsReceiptLedger(false);
     setIsReceiptOpen(true);
 
     setSaleForm({
@@ -438,6 +441,7 @@ export const Customers = () => {
         customerMobile={receiptSale?.customers?.mobile || undefined}
         receiptNo={receiptNo}
         allSales={sales || []}
+        showLedger={isReceiptLedger}
       />
     </div >
   );

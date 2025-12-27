@@ -22,9 +22,10 @@ interface ReceiptModalProps {
     customerMobile?: string;
     receiptNo?: number;
     allSales?: Sale[];
+    showLedger?: boolean;
 }
 
-export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile, receiptNo, allSales }: ReceiptModalProps) => {
+export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile, receiptNo, allSales, showLedger = false }: ReceiptModalProps) => {
     const { t, language } = useLanguage();
     const receiptRef = useRef<HTMLDivElement>(null);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -33,7 +34,9 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
     if (!sale) return null;
 
     // Ledger Logic
-    let customerSales = allSales
+    const shouldUseLedger = showLedger && allSales && allSales.length > 0;
+
+    let customerSales = shouldUseLedger && allSales
         ? allSales
             .filter(s => s.customer_id === sale.customer_id)
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -62,8 +65,9 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
             clone.style.position = 'fixed';
             clone.style.top = '-10000px';
             clone.style.left = '0'; // Keep left alignment
-            clone.style.width = `${original.offsetWidth}px`; // Match original width
+            clone.style.width = '380px'; // Force standard width for consistency
             clone.style.height = 'auto'; // Let it expand naturally
+            clone.style.minHeight = '100px'; // Ensure basic height
             clone.style.zIndex = '-9999';
             clone.style.overflow = 'visible'; // Ensure nothing is hidden
 
@@ -183,6 +187,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     {/* Receipt Container for Capture */}
                     <div
                         ref={receiptRef}
+                        id="receipt-container"
                         className="bg-white p-6 shadow-xl border border-gray-200 w-full max-w-[380px] font-sans relative"
                         style={{ aspectRatio: 'auto' }}
                     >
@@ -247,8 +252,8 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         </div>
 
                         {/* Totals Section */}
-                        <div className="flex justify-end mb-8 pt-4">
-                            <div className="w-2/3 space-y-2">
+                        <div className="mt-6">
+                            <div className="w-full space-y-2">
                                 <div className="flex justify-between text-sm text-gray-600 px-2">
                                     <span>{isMarathi ? 'एकूण रक्कम' : 'Sub Total'}</span>
                                     <span className="font-medium">₹{totalAmount}</span>

@@ -1,0 +1,47 @@
+/* Print-specific styles */
+@media print {
+
+    /* Hide all non-receipt elements */
+    body>*:not(.receipt-print-wrapper),
+    nav,
+    aside,
+    button,
+    .fixed,
+    .sticky,
+    .mobile-nav,
+    [role="dialog"]>div[data-state="open"]:not(:has(#receipt-container)),
+    /* Often mobile navs are fixed at bottom */
+    div.fixed.bottom-0 {
+        display: none !important;
+    }
+
+    /* Target the dialog content if possible, or just the receipt container */
+    /* Since we are using html2canvas mostly, these styles help if user presses Ctrl+P */
+
+    /* Ensure receipt container is visible */
+    #receipt-container {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        z-index: 9999;
+    }
+
+    /* Reset body styles for print */
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        overflow: visible;
+    }
+
+    /* Hide scrollbars */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}
