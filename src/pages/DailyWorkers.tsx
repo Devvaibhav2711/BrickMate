@@ -226,24 +226,24 @@ export const DailyWorkers = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Week Navigation */}
-                    <div className="flex items-center gap-2 bg-card p-1 rounded-md border shadow-sm">
-                        <Button variant="ghost" size="icon" onClick={() => handleWeekChange('prev')}>
+                    <div className="flex items-center gap-2 p-1 bg-card rounded-lg border shadow-sm w-full md:w-auto justify-between md:justify-start">
+                        {/* Week Navigation */}
+                        <Button variant="ghost" size="icon" onClick={() => handleWeekChange('prev')} className="h-8 w-8">
                             <ChevronLeft className="w-4 h-4" />
                         </Button>
-                        <div className="flex items-center gap-2 px-2">
+                        <div className="flex items-center gap-2 px-2 flex-1 justify-center">
                             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm font-medium min-w-[140px] text-center">
+                            <span className="text-sm font-medium min-w-[120px] text-center">
                                 {format(weekStart, 'dd MMM')} - {format(weekEnd, 'dd MMM')}
                             </span>
                         </div>
 
-                        <Button variant="ghost" size="icon" onClick={() => handleWeekChange('next')}>
+                        <Button variant="ghost" size="icon" onClick={() => handleWeekChange('next')} className="h-8 w-8">
                             <ChevronRight className="w-4 h-4" />
                         </Button>
                     </div>
 
-                    <Button onClick={() => setIsAddWorkerOpen(true)} className="gap-2">
+                    <Button onClick={() => setIsAddWorkerOpen(true)} className="gap-2 w-full md:w-auto">
                         <Plus className="w-4 h-4" />
                         {t('addLabour')}
                     </Button>
@@ -257,20 +257,20 @@ export const DailyWorkers = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                    <TableHead className="w-[180px] sticky left-0 bg-background z-20 font-bold">{t('labourName')}</TableHead>
-                                    <TableHead className="w-[80px] text-center font-bold text-primary">{t('totalDays')}</TableHead>
+                                    <TableHead className="w-[140px] sticky left-0 bg-background z-20 font-bold px-3 shadow-[1px_0_3px_rgba(0,0,0,0.1)]">{t('labourName')}</TableHead>
+                                    <TableHead className="w-[60px] text-center font-bold text-primary px-1 text-xs">{t('totalDays')}</TableHead>
 
                                     {daysToDisplay.map(day => (
-                                        <TableHead key={day.toString()} className="min-w-[60px] p-1 text-center">
-                                            <div className="flex flex-col items-center justify-center p-1 rounded-md">
-                                                <span className="text-xs font-semibold text-muted-foreground">{format(day, 'EEE')}</span>
-                                                <span className="text-lg font-bold leading-none">{format(day, 'd')}</span>
+                                        <TableHead key={day.toString()} className="min-w-[50px] p-0 text-center">
+                                            <div className="flex flex-col items-center justify-center py-2">
+                                                <span className="text-[10px] uppercase text-muted-foreground">{format(day, 'EEE')}</span>
+                                                <span className="text-sm font-bold">{format(day, 'd')}</span>
                                             </div>
                                         </TableHead>
                                     ))}
 
-                                    <TableHead className="text-right bg-background font-bold min-w-[100px]">{t('weeklyEarnings')}</TableHead>
-                                    <TableHead className="text-center bg-background font-bold min-w-[140px] sticky right-0 z-20 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)]">{t('status')}</TableHead>
+                                    <TableHead className="text-right bg-background font-bold min-w-[90px] px-2 text-xs">{t('weeklyEarnings')}</TableHead>
+                                    <TableHead className="text-center bg-background font-bold min-w-[100px] sticky right-0 z-20 shadow-[-2px_0_5px_rgba(0,0,0,0.05)] px-2">{t('status')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -322,16 +322,16 @@ export const DailyWorkers = () => {
                                     return (
                                         <TableRow key={worker.id} className="group hover:bg-muted/30">
                                             <TableCell
-                                                className="font-medium sticky left-0 bg-background z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] custom-cell-border cursor-pointer hover:bg-muted/50 transition-colors"
+                                                className="font-medium sticky left-0 bg-background z-10 shadow-[1px_0_3px_rgba(0,0,0,0.1)] cursor-pointer hover:bg-muted/50 transition-colors px-3 py-2"
                                                 onClick={() => navigate(`/labour/${worker.id}`)}
                                             >
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-semibold text-foreground hover:underline hover:text-primary transition-all">{worker.name}</span>
-                                                    <span className="text-[11px] text-muted-foreground">{formatCurrency(worker.daily_wage)}/day</span>
+                                                    <span className="text-sm font-semibold text-foreground truncate max-w-[120px]">{worker.name}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{formatCurrency(worker.daily_wage)}/day</span>
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell className="text-center font-bold text-primary text-base">
+                                            <TableCell className="text-center font-bold text-primary px-1">
                                                 {totalDays}
                                             </TableCell>
 
@@ -343,30 +343,28 @@ export const DailyWorkers = () => {
 
                                                 // Cell Style
                                                 let cellClass = "bg-gray-50/50 hover:bg-gray-100";
-                                                let indicatorClass = "opacity-0"; // Hidden by default (Absent)
+                                                let indicatorClass = "scale-0"; // Hidden by default
 
                                                 if (isPresent) {
                                                     if (isHalfDay) {
                                                         cellClass = "bg-orange-50 hover:bg-orange-100";
-                                                        indicatorClass = "bg-orange-500 opacity-100";
+                                                        indicatorClass = "bg-orange-500 scale-100";
                                                     } else {
                                                         cellClass = "bg-green-50 hover:bg-green-100";
-                                                        indicatorClass = "bg-green-500 opacity-100";
+                                                        indicatorClass = "bg-green-500 scale-100";
                                                     }
                                                 }
 
                                                 return (
-                                                    <TableCell key={day.toString()} className="p-1 text-center">
+                                                    <TableCell key={day.toString()} className="p-0.5 text-center">
                                                         <Popover>
                                                             <PopoverTrigger asChild>
                                                                 <div
-                                                                    className={`w-full h-12 rounded-md cursor-pointer transition-all flex flex-col items-center justify-center gap-1 border border-transparent hover:border-border ${cellClass}`}
+                                                                    className={`w-full h-10 rounded-sm cursor-pointer transition-all flex items-center justify-center border border-transparent hover:border-border ${cellClass}`}
                                                                 >
-                                                                    <div className={`w-2 h-2 rounded-full transition-all ${indicatorClass}`} />
-                                                                    {isPresent && (
-                                                                        <span className="text-[10px] font-medium text-muted-foreground">
-                                                                            {isHalfDay ? '0.5' : '1.0'}
-                                                                        </span>
+                                                                    <div className={`w-2.5 h-2.5 rounded-full transition-transform duration-200 ${indicatorClass} shadow-sm`} />
+                                                                    {isPresent && isHalfDay && (
+                                                                        <span className="text-[9px] font-bold text-orange-700 ml-0.5">½</span>
                                                                     )}
                                                                 </div>
                                                             </PopoverTrigger>
@@ -383,41 +381,38 @@ export const DailyWorkers = () => {
                                                 );
                                             })}
 
-                                            <TableCell className="text-right font-medium">
+                                            <TableCell className="text-right font-medium px-2">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="font-bold text-green-700">{formatCurrency(weeklyEarnings)}</span>
+                                                    <span className="font-bold text-sm text-green-700">{formatCurrency(weeklyEarnings)}</span>
                                                     {totalPaid > 0 && (
-                                                        <span className="text-[10px] text-muted-foreground">Paid: {formatCurrency(totalPaid)}</span>
+                                                        <span className="text-[9px] text-muted-foreground">Pd: {formatCurrency(totalPaid)}</span>
                                                     )}
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell className="text-center sticky right-0 bg-background p-2 z-20 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.05)] custom-cell-border">
+                                            <TableCell className="text-center sticky right-0 bg-background p-1.5 z-20 shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">
                                                 {weeklyEarnings === 0 ? (
                                                     <span className="text-xs text-muted-foreground">-</span>
                                                 ) : remaining <= 0 ? (
                                                     <div className="flex flex-col items-center justify-center text-green-600">
-                                                        <div className="flex items-center gap-1 font-bold">
-                                                            <CheckCircle2 className="w-4 h-4" />
-                                                            <span className="text-xs">{t('paid')}</span>
-                                                        </div>
-                                                        {totalPaid > weeklyEarnings && ( // Overpaid case
-                                                            <span className="text-[10px] text-orange-600">Over: {formatCurrency(totalPaid - weeklyEarnings)}</span>
+                                                        <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+                                                        {totalPaid > weeklyEarnings && (
+                                                            <span className="text-[9px] text-orange-600 font-bold">+{formatCurrency(totalPaid - weeklyEarnings)}</span>
                                                         )}
                                                     </div>
                                                 ) : (
                                                     <Button
                                                         size="sm"
                                                         variant={totalPaid > 0 ? "secondary" : "default"}
-                                                        className={`h-8 text-xs w-full ${totalPaid > 0 ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : 'bg-primary text-primary-foreground'}`}
+                                                        className={`h-7 text-xs w-full px-1 shadow-sm ${totalPaid > 0 ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                                                         onClick={() => openPaymentDialog(worker, weeklyEarnings, totalPaid)}
                                                     >
                                                         {totalPaid > 0 ? 'Pay Rem.' : 'Pay'}
                                                     </Button>
                                                 )}
                                                 {remaining > 0 && totalPaid > 0 && (
-                                                    <div className="text-[10px] text-orange-600 mt-1 font-medium">
-                                                        Rem: {formatCurrency(remaining)}
+                                                    <div className="text-[9px] text-orange-600 font-bold mt-0.5">
+                                                        {formatCurrency(remaining)}
                                                     </div>
                                                 )}
                                             </TableCell>

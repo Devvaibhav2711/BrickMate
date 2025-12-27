@@ -48,10 +48,10 @@ export const Dashboard = () => {
   return (
     <div className="p-4 space-y-6">
       {/* Filters */}
-      <div className="flex gap-4 overflow-x-auto pb-2">
-        <div className="w-[140px] flex-shrink-0">
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="flex-1 min-w-[120px]">
           <Select value={selectedYear} onValueChange={setYear}>
-            <SelectTrigger className="bg-background">
+            <SelectTrigger className="bg-background w-full">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
@@ -64,9 +64,9 @@ export const Dashboard = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-[140px] flex-shrink-0">
+        <div className="flex-1 min-w-[120px]">
           <Select value={startMonth} onValueChange={setStartMonth}>
-            <SelectTrigger className="bg-background">
+            <SelectTrigger className="bg-background w-full">
               <SelectValue placeholder="Start Month" />
             </SelectTrigger>
             <SelectContent>
@@ -81,20 +81,25 @@ export const Dashboard = () => {
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-6 text-white shadow-brick relative overflow-hidden custom-hero-card"
+        className="rounded-2xl p-6 text-white shadow-xl relative overflow-hidden custom-hero-card group"
         style={{
           backgroundImage: "url('/vithu_mauli.png')",
           backgroundSize: 'cover',
           backgroundPosition: 'center 20%',
         }}
       >
-        <div className="absolute inset-0 bg-black/40 z-0" />
-        <div className="relative z-10">
-          <h2 className="text-sm font-medium opacity-90 text-white">{t('thisMonth')}</h2>
-          <p className="text-3xl font-bold mt-1 text-white">
-            {formatNumber(stats?.monthlyProduction || 0)}
-          </p>
-          <p className="text-sm opacity-80 mt-1 text-white">{t('bricksMade')}</p>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20 z-0 transition-opacity group-hover:opacity-90" />
+        <div className="relative z-10 flex flex-col justify-center h-full">
+          <h2 className="text-sm font-medium opacity-90 text-white/90 uppercase tracking-wider">{t('thisMonth')}</h2>
+          <div className="mt-2">
+            <p className="text-4xl font-bold text-white tracking-tight">
+              {formatNumber(stats?.monthlyProduction || 0)}
+            </p>
+            <p className="text-sm font-medium text-white/80 mt-1 flex items-center gap-2">
+              <Factory className="w-4 h-4" />
+              {t('bricksMade')}
+            </p>
+          </div>
         </div>
       </motion.div>
 

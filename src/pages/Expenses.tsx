@@ -178,76 +178,84 @@ export const Expenses = () => {
       />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <SheetHeader>
-            <SheetTitle className="text-left">{t('addExpense')}</SheetTitle>
-          </SheetHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>{t('category')} *</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value: any) => setFormData({ ...formData, category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
-                  <SelectItem value="transport">{t('transport')}</SelectItem>
-                  <SelectItem value="labour">{t('labour')}</SelectItem>
-                  <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
-                  <SelectItem value="other">{t('other')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <SheetContent side="bottom" className="rounded-t-[32px] p-0 overflow-hidden max-h-[90vh]">
+          <div className="p-6 bg-gradient-to-b from-background to-muted/20 h-full overflow-y-auto">
+            <SheetHeader className="mb-6">
+              <SheetTitle className="text-left text-2xl font-bold">{t('addExpense')}</SheetTitle>
+            </SheetHeader>
+            <form onSubmit={handleSubmit} className="space-y-6">
 
-            <div className="space-y-2">
-              <Label htmlFor="expenseAmount">{t('amount')} (₹) *</Label>
-              <FormattedNumberInput
-                id="expenseAmount"
-                value={formData.amount || ''}
-                onChange={(val) => setFormData({ ...formData, amount: val })}
-                placeholder="5000"
-                required
-                className={errors.amount ? "border-destructive" : ""}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="expenseAmount" className="text-muted-foreground">{t('amount')} (₹) *</Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-muted-foreground">₹</span>
+                  <FormattedNumberInput
+                    id="expenseAmount"
+                    value={formData.amount || ''}
+                    onChange={(val) => setFormData({ ...formData, amount: val })}
+                    placeholder="0"
+                    required
+                    className={`h-16 text-3xl font-bold pl-10 bg-card border-2 transition-all ${errors.amount ? "border-destructive focus-visible:ring-destructive" : "border-muted focus-visible:border-primary focus-visible:ring-0"}`}
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expenseDate">{t('date')} *</Label>
-              <Input
-                id="expenseDate"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                required
-                className={errors.date ? "border-destructive" : ""}
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t('category')} *</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value: any) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger className="h-12 bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
+                      <SelectItem value="transport">{t('transport')}</SelectItem>
+                      <SelectItem value="labour">{t('labour')}</SelectItem>
+                      <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
+                      <SelectItem value="other">{t('other')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expenseDesc">{t('description')}</Label>
-              <Textarea
-                id="expenseDesc"
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t('soilPurchase')}
-                rows={2}
-                className={errors.description ? "border-destructive" : ""}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="expenseDate">{t('date')} *</Label>
+                  <Input
+                    id="expenseDate"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                    className={`h-12 bg-card ${errors.date ? "border-destructive" : ""}`}
+                  />
+                </div>
+              </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsSheetOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" className="flex-1" disabled={addExpense.isPending}>
-                <Plus className="w-4 h-4" />
-                {t('save')}
-              </Button>
-            </div>
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="expenseDesc">{t('description')}</Label>
+                <Textarea
+                  id="expenseDesc"
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder={t('soilPurchase')}
+                  rows={3}
+                  className={`bg-card resize-none ${errors.description ? "border-destructive" : ""}`}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button type="button" variant="outline" className="flex-1 h-12 text-base rounded-xl" onClick={() => setIsSheetOpen(false)}>
+                  {t('cancel')}
+                </Button>
+                <Button type="submit" className="flex-1 h-12 text-base rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={addExpense.isPending}>
+                  <Plus className="w-5 h-5 mr-2" />
+                  {t('save')}
+                </Button>
+              </div>
+            </form>
+          </div>
         </SheetContent>
       </Sheet>
     </div >
