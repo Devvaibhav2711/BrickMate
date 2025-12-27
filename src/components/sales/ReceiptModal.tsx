@@ -13,6 +13,7 @@ import { Sale } from '@/hooks/useSales';
 import { useLanguage } from '@/contexts/LanguageContext';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
+import { jsPDF } from 'jspdf';
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -115,63 +116,103 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
         setIsDownloading(false);
     };
 
-    const handleWhatsApp = async () => {
+    const handleSharePdf = async () => {
+        if (!receiptRef.current) return;
         setIsDownloading(true);
-        toast.loading(isMarathi ? "व्हॉट्सअँप शेअर तयार करत आहे..." : "Preparing WhatsApp share...");
+
+        try {
+            const canvas = await html2canvas(receiptRef.current, {
+                scale: 2, // Better quality
+                useCORS: true,
+                logging: false,
+                windowWidth: 380, // Force mobile width for layout consistency
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pdfWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            // First page
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
+
+            // Add extra pages if needed
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight; // Negative position to show bottom part
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+            }
+
+            const fileName = `Statement_${customerName || 'Customer'}_${format(new Date(), 'dd-MM-yyyy')}.pdf`;
+
+            // Try Web Share API with File
+            const pdfBlob = pdf.output('blob');
+            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Statement',
+                    text: `Statement for ${customerName}`,
+                });
+            } else {
+                // Fallback to download
+                pdf.save(fileName);
+                toast.success(t('success') + ': PDF Downloaded');
+            }
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            toast.error(t('error') + ': Failed to generate PDF');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleWhatsApp = async () => {
+        if (!receiptRef.current) return;
+        setIsDownloading(true);
+
         try {
             const canvas = await generateImage();
-            if (!canvas) throw new Error("Canvas generation failed");
+            if (!canvas) return;
 
+            // Convert canvas to blob
             canvas.toBlob(async (blob) => {
                 if (!blob) {
-                    toast.error("Failed to create image.");
                     setIsDownloading(false);
                     return;
                 }
 
-                // Try Web Share API first (Mobile)
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'receipt.jpg', { type: 'image/jpeg' })] })) {
-                    try {
-                        const file = new File([blob], `Receipt_${displayReceiptNo}.jpg`, { type: 'image/jpeg' });
-                        await navigator.share({
-                            files: [file],
-                            title: 'Payment Receipt',
-                            text: `Payment Receipt for ${customerName}`,
-                        });
-                        toast.dismiss();
-                    } catch (shareError) {
-                        console.error('Share dismissed or failed', shareError);
-                        toast.dismiss();
-                        // If share failed/cancelled, do nothing or fallback?
-                        // Usually user cancelled styling.
-                    }
+                const file = new File([blob], `receipt_${displayReceiptNo}.jpg`, { type: 'image/jpeg' });
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt',
+                        text: `${isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt'} #${displayReceiptNo}
+${isMarathi ? 'एकूण रक्कम' : 'Total Amount'}: ₹${totalAmount}
+${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`,
+                    });
                 } else {
-                    // Fallback (Desktop): Download + WhatsApp Web Text
-                    const image = canvas.toDataURL("image/jpeg", 0.9);
                     const link = document.createElement('a');
-                    link.href = image;
-                    link.download = `Receipt_For_WhatsApp_${displayReceiptNo}.jpg`;
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `receipt_${displayReceiptNo}.jpg`;
                     link.click();
-
-                    toast.dismiss();
-                    toast.success(isMarathi ? "फोटो डाउनलोड झाला! व्हॉट्सअँप उघडत आहे..." : "Image downloaded! Opening WhatsApp...", { duration: 3000 });
-
-                    setTimeout(() => {
-                        const message = isMarathi
-                            ? `*विठुमाऊली वीट उत्पादक केद्र पावती*\nकृपया डाउनलोड केलेली पावती जोडा.\n\nदिनांक: ${format(new Date(), 'dd/MM/yyyy')}\nएकूण: ₹${totalAmount}\nबाकी: ₹${balanceDue}`
-                            : `*VITHUMAULI VIT UTPADAK KENDRA Receipt*\nPlease attach the downloaded receipt.\n\nDate: ${format(new Date(), 'dd/MM/yyyy')}\nTotal: ₹${totalAmount}\nBalance: ₹${balanceDue}`;
-
-                        const mobile = customerMobile ? `91${customerMobile.replace(/\D/g, '')}` : '';
-                        const url = `https://wa.me/${mobile}?text=${encodeURIComponent(message)}`;
-                        window.open(url, '_blank');
-                    }, 1500);
                 }
+                setIsDownloading(false);
             }, 'image/jpeg', 0.9);
 
         } catch (error) {
-            console.error("WhatsApp share failed:", error);
-            toast.error("Could not share to WhatsApp");
-        } finally {
+            console.error('Error sharing:', error);
+            toast.error(t('error'));
             setIsDownloading(false);
         }
     };
@@ -187,7 +228,6 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     {/* Receipt Container for Capture */}
                     <div
                         ref={receiptRef}
-                        id="receipt-container"
                         className="bg-white p-6 shadow-xl border border-gray-200 w-full max-w-[380px] font-sans relative"
                         style={{ aspectRatio: 'auto' }}
                     >
@@ -295,18 +335,49 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     </div>
                 </div>
 
-                <DialogFooter className="p-4 bg-white border-t gap-3 flex-col sm:flex-row">
-                    <Button variant="outline" onClick={handleDownloadJpg} disabled={isDownloading} className="flex-1 h-11 border-gray-300">
-                        {isDownloading ? <span className="animate-spin mr-2">⏳</span> : <Download className="w-4 h-4 mr-2" />}
-                        {isMarathi ? 'गॅलरीत सेव करा' : 'Save to Gallery'}
-                    </Button>
-
-                    <Button onClick={handleWhatsApp} className="flex-1 h-11 bg-[#25D366] hover:bg-[#128C7E] text-white shadow-md">
-                        <Share2 className="w-4 h-4 mr-2" />
-                        {isMarathi ? 'व्हॉट्सअँप वर पाठवा' : 'Share on WhatsApp'}
-                    </Button>
+                <DialogFooter className="p-4 border-t bg-white flex-col gap-2 sm:flex-row">
+                    {shouldUseLedger ? (
+                        <div className="flex w-full gap-2">
+                            <Button onClick={handleSharePdf} className="flex-1 bg-red-600 hover:bg-red-700 text-white" disabled={isDownloading}>
+                                {isDownloading ? t('loadingText') : (
+                                    <>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        Share History PDF
+                                    </>
+                                )}
+                            </Button>
+                            <Button onClick={handleDownloadJpg} variant="outline" className="flex-1" disabled={isDownloading}>
+                                {isDownloading ? t('loadingText') : (
+                                    <>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        {t('downloadJpg')}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex w-full gap-2">
+                            <Button onClick={handleWhatsApp} className="flex-1 bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isDownloading}>
+                                {isDownloading ? t('loadingText') : (
+                                    <>
+                                        <Share2 className="w-4 h-4 mr-2" />
+                                        {t('shareWhatsapp')}
+                                    </>
+                                )}
+                            </Button>
+                            <Button onClick={handleDownloadJpg} variant="outline" className="flex-1" disabled={isDownloading}>
+                                {isDownloading ? t('loadingText') : (
+                                    <>
+                                        <Download className="w-4 h-4 mr-2" />
+                                        {t('downloadJpg')}
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 };
+

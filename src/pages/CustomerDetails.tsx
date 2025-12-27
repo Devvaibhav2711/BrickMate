@@ -32,7 +32,8 @@ type Transaction = {
 export const CustomerDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
+    const isMarathi = language === 'mr';
 
     const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
     const [isStatementOpen, setIsStatementOpen] = useState(false);
@@ -183,7 +184,7 @@ export const CustomerDetails = () => {
                     </Button>
                     <Button variant="outline" onClick={() => setIsStatementOpen(true)}>
                         <Share2 className="w-4 h-4 mr-2" />
-                        {t('statement') || 'Statement'}
+                        {isMarathi ? 'इतिहास शेअर करा (PDF)' : 'Share History (PDF)'}
                     </Button>
                     <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
                         <Printer className="w-4 h-4 mr-2" />
