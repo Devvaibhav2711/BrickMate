@@ -122,7 +122,7 @@ export const LabourDetails = () => {
                     <div>
                         <h1 className="text-2xl font-bold flex items-center gap-2">
                             {labour.name}
-                            {!isActive && <Badge variant="destructive">Archived</Badge>}
+
                         </h1>
                     </div>
                 </div>

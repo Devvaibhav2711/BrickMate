@@ -89,10 +89,6 @@ export const Labour = () => {
             {enrichedList.map((worker, index) => (
               <motion.div
                 key={worker.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ delay: index * 0.05 }}
                 onClick={() => navigate(`/labour/${worker.id}`)}
                 className="bg-card rounded-xl p-4 border border-border shadow-sm active:scale-[0.98] transition-all cursor-pointer"
               >

@@ -28,7 +28,7 @@ export const MobileNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-t border-border/40 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] safe-area-inset-bottom">
-      <div className="flex items-center justify-around px-2 py-3">
+      <div className="flex items-center justify-start md:justify-around px-2 py-3 overflow-x-auto scrollbar-hide w-full gap-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
