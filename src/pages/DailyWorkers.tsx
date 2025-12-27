@@ -225,8 +225,8 @@ export const DailyWorkers = () => {
                     <p className="text-muted-foreground">{t('attendance')}</p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 p-1 bg-card rounded-lg border shadow-sm w-full md:w-auto justify-between md:justify-start">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+                    <div className="flex items-center gap-2 p-1 bg-card rounded-lg border shadow-sm flex-1 sm:flex-none justify-between">
                         {/* Week Navigation */}
                         <Button variant="ghost" size="icon" onClick={() => handleWeekChange('prev')} className="h-8 w-8">
                             <ChevronLeft className="w-4 h-4" />
@@ -243,7 +243,7 @@ export const DailyWorkers = () => {
                         </Button>
                     </div>
 
-                    <Button onClick={() => setIsAddWorkerOpen(true)} className="gap-2 w-full md:w-auto">
+                    <Button onClick={() => setIsAddWorkerOpen(true)} className="gap-2 w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md">
                         <Plus className="w-4 h-4" />
                         {t('addLabour')}
                     </Button>
