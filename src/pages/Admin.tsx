@@ -83,6 +83,7 @@ const Admin = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [receiptSale, setReceiptSale] = useState<Sale | null>(null);
     const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+    const [receiptNo, setReceiptNo] = useState(0);
 
     // Data Fetching
     const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -641,7 +642,7 @@ const Admin = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {sales?.map((sale) => (
+                                    {sales?.map((sale, index) => (
                                         <TableRow key={sale.id}>
                                             <TableCell>{format(new Date(sale.date), 'dd MMM yyyy')}</TableCell>
                                             <TableCell
@@ -679,6 +680,7 @@ const Admin = () => {
                                                             customers: customers?.find(c => c.id === sale.customer_id) || null
                                                         } as unknown as Sale;
                                                         setReceiptSale(fullSale);
+                                                        setReceiptNo((sales?.length || 0) - index);
                                                         setIsReceiptOpen(true);
                                                     }}
                                                     title={t('receipt')}
@@ -1065,6 +1067,8 @@ const Admin = () => {
                 sale={receiptSale}
                 customerName={receiptSale?.customers?.name}
                 customerMobile={receiptSale?.customers?.mobile || undefined}
+                receiptNo={receiptNo}
+                allSales={sales || undefined}
             />
 
             <AddPaymentSheet

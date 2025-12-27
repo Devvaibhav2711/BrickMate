@@ -437,6 +437,7 @@ export const Customers = () => {
         customerName={receiptSale?.customers?.name}
         customerMobile={receiptSale?.customers?.mobile || undefined}
         receiptNo={receiptNo}
+        allSales={sales || []}
       />
     </div >
   );

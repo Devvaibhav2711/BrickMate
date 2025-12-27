@@ -21,15 +21,27 @@ interface ReceiptModalProps {
     customerName?: string;
     customerMobile?: string;
     receiptNo?: number;
+    allSales?: Sale[];
 }
 
-export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile, receiptNo }: ReceiptModalProps) => {
+export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobile, receiptNo, allSales }: ReceiptModalProps) => {
     const { t, language } = useLanguage();
     const receiptRef = useRef<HTMLDivElement>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const isMarathi = language === 'mr' || true; // Force Marathi layout primarily
 
     if (!sale) return null;
+
+    // Ledger Logic
+    const customerSales = allSales
+        ? allSales
+            .filter(s => s.customer_id === sale.customer_id)
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        : [sale];
+
+    const totalAmount = customerSales.reduce((sum, s) => sum + s.total_amount, 0);
+    const paidAmount = customerSales.reduce((sum, s) => sum + s.amount_paid, 0);
+    const balanceDue = totalAmount - paidAmount;
 
     const displayReceiptNo = receiptNo
         ? receiptNo.toString().padStart(4, '0')
@@ -139,8 +151,8 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
 
                     setTimeout(() => {
                         const message = isMarathi
-                            ? `*विठूमाऊली वीट उत्पादक पावती*\nकृपया डाउनलोड केलेली पावती जोडा.\n\nदिनांक: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nएकूण: ₹${sale.total_amount}`
-                            : `*VITHUMAULI VIT UTPADAK Receipt*\nPlease attach the downloaded receipt.\n\nDate: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nTotal: ₹${sale.total_amount}`;
+                            ? `*विठुमाऊली वीट उत्पादक केद्र पावती*\nकृपया डाउनलोड केलेली पावती जोडा.\n\nदिनांक: ${format(new Date(), 'dd/MM/yyyy')}\nएकूण: ₹${totalAmount}\nबाकी: ₹${balanceDue}`
+                            : `*VITHUMAULI VIT UTPADAK KENDRA Receipt*\nPlease attach the downloaded receipt.\n\nDate: ${format(new Date(), 'dd/MM/yyyy')}\nTotal: ₹${totalAmount}\nBalance: ₹${balanceDue}`;
 
                         const mobile = customerMobile ? `91${customerMobile.replace(/\D/g, '')}` : '';
                         const url = `https://wa.me/${mobile}?text=${encodeURIComponent(message)}`;
@@ -174,7 +186,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         {/* Header Image */}
                         {/* Header Image Replacement */}
                         <div className="mb-4 text-center">
-                            <h1 className="text-2xl font-black text-[#e11d48] uppercase tracking-widest border-b-4 border-[#e11d48] inline-block pb-1">विठूमाऊली वीट उत्पादक</h1>
+                            <h1 className="text-2xl font-black text-[#e11d48] uppercase tracking-widest border-b-4 border-[#e11d48] inline-block pb-1">विठुमाऊली वीट उत्पादक केद्र</h1>
                         </div>
 
                         {/* Address & Contact (Below Image) */}
@@ -210,33 +222,41 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         {/* Table */}
                         <div className="mb-6">
                             <div className="grid grid-cols-12 bg-gray-50 rounded-t-md border border-gray-100 py-2 px-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                <div className="col-span-6 text-left">{isMarathi ? 'तपशील' : 'ITEM'}</div>
-                                <div className="col-span-2 text-right">{isMarathi ? 'नग' : 'QTY'}</div>
-                                <div className="col-span-2 text-right">{isMarathi ? 'दर' : 'RATE'}</div>
-                                <div className="col-span-2 text-right">{isMarathi ? 'रक्कम' : 'TOTAL'}</div>
+                                <div className="col-span-5 text-left">{isMarathi ? 'तपशील' : 'ITEM'}</div>
+                                <div className="col-span-3 text-right">{isMarathi ? 'नग' : 'QTY'}</div>
+                                <div className="col-span-4 text-right">{isMarathi ? 'रक्कम' : 'TOTAL'}</div>
                             </div>
-                            <div className="grid grid-cols-12 border-x border-b border-gray-100 py-3 px-3 text-sm text-black items-center">
-                                <div className="col-span-6 text-left font-medium">{isMarathi ? 'विटा (स्टँडर्ड)' : 'Bricks (Standard)'}</div>
-                                <div className="col-span-2 text-right font-mono text-gray-700">{sale.quantity}</div>
-                                <div className="col-span-2 text-right font-mono text-gray-700">{sale.rate_per_brick}</div>
-                                <div className="col-span-2 text-right font-bold text-black">{sale.total_amount}</div>
+                            <div className="border-x border-b border-gray-100 divide-y divide-gray-100">
+                                {customerSales.map((item, index) => (
+                                    <div key={item.id} className="grid grid-cols-12 py-3 px-3 text-sm text-black items-start">
+                                        <div className="col-span-5 text-left">
+                                            <div className="font-medium">{isMarathi ? 'विटा' : 'Bricks'}</div>
+                                            <div className="text-[10px] text-gray-400 font-mono mt-0.5">{format(new Date(item.date), 'dd/MM/yy')}</div>
+                                        </div>
+                                        <div className="col-span-3 text-right font-mono text-gray-700">
+                                            {item.quantity}
+                                            <div className="text-[10px] text-gray-400">@{item.rate_per_brick}</div>
+                                        </div>
+                                        <div className="col-span-4 text-right font-bold text-black">{item.total_amount}</div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
                         {/* Totals Section */}
-                        <div className="flex justify-end mb-8">
+                        <div className="flex justify-end mb-8 pt-4">
                             <div className="w-2/3 space-y-2">
                                 <div className="flex justify-between text-sm text-gray-600 px-2">
                                     <span>{isMarathi ? 'एकूण रक्कम' : 'Sub Total'}</span>
-                                    <span className="font-medium">₹{sale.total_amount}</span>
+                                    <span className="font-medium">₹{totalAmount}</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-green-700 px-2">
                                     <span>{isMarathi ? 'जमा रक्कम' : 'Paid Amount'}</span>
-                                    <span className="font-medium">- ₹{sale.amount_paid}</span>
+                                    <span className="font-medium">- ₹{paidAmount}</span>
                                 </div>
                                 <div className="flex justify-between bg-red-50 p-2 rounded-md items-center border border-red-100 mt-2 shadow-sm">
                                     <span className="text-red-800 font-bold text-sm uppercase mr-4">{isMarathi ? 'बाकी रक्कम' : 'BALANCE DUE'}</span>
-                                    <span className="text-red-700 font-extrabold text-xl whitespace-nowrap">₹{sale.total_amount - sale.amount_paid}</span>
+                                    <span className="text-red-700 font-extrabold text-xl whitespace-nowrap">₹{balanceDue}</span>
                                 </div>
                             </div>
                         </div>
