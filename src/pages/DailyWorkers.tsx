@@ -489,8 +489,8 @@ export const DailyWorkers = () => {
 
             {/* Payment Dialog */}
             <Dialog open={paymentDialog.isOpen} onOpenChange={(open) => !open && setPaymentDialog(prev => ({ ...prev, isOpen: false }))}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
+                <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                    <DialogHeader className="px-6 py-4 border-b">
                         <DialogTitle>Make Weekly Payment</DialogTitle>
                         <DialogDescription>
                             Worker: <span className="font-semibold text-foreground">{paymentDialog.workerName}</span><br />
@@ -498,32 +498,34 @@ export const DailyWorkers = () => {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 py-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="bg-muted p-3 rounded-lg">
-                                <span className="text-muted-foreground block">Total Earned</span>
-                                <span className="text-lg font-bold">{formatCurrency(paymentDialog.totalEarned)}</span>
+                    <div className="flex-1 overflow-y-auto px-6 py-4">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="bg-muted p-3 rounded-lg">
+                                    <span className="text-muted-foreground block">Total Earned</span>
+                                    <span className="text-lg font-bold">{formatCurrency(paymentDialog.totalEarned)}</span>
+                                </div>
+                                <div className="bg-green-50 p-3 rounded-lg">
+                                    <span className="text-green-700 block">Already Paid</span>
+                                    <span className="text-lg font-bold text-green-700">{formatCurrency(paymentDialog.paidAmount)}</span>
+                                </div>
                             </div>
-                            <div className="bg-green-50 p-3 rounded-lg">
-                                <span className="text-green-700 block">Already Paid</span>
-                                <span className="text-lg font-bold text-green-700">{formatCurrency(paymentDialog.paidAmount)}</span>
-                            </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label>Payment Amount (₹)</Label>
-                            <FormattedNumberInput
-                                value={paymentAmount}
-                                onChange={(val) => setPaymentAmount(val.toString())}
-                                placeholder="Enter amount"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Max Remaining: <span className="font-medium text-foreground">{formatCurrency(paymentDialog.remainingAmount)}</span>
-                            </p>
+                            <div className="space-y-2">
+                                <Label>Payment Amount (₹)</Label>
+                                <FormattedNumberInput
+                                    value={paymentAmount}
+                                    onChange={(val) => setPaymentAmount(val.toString())}
+                                    placeholder="Enter amount"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Max Remaining: <span className="font-medium text-foreground">{formatCurrency(paymentDialog.remainingAmount)}</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <DialogFooter>
+                    <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
                         <Button onClick={handleConfirmPayment}>
                             Pay {formatCurrency(Number(paymentAmount))}
                         </Button>

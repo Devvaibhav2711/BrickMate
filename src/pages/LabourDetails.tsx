@@ -127,30 +127,7 @@ export const LabourDetails = () => {
                     </div>
                 </div>
 
-                <Dialog open={isArchiveDialogOpen} onOpenChange={setIsArchiveDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant={isActive ? "destructive" : "outline"} size="sm">
-                            {isActive ? "Archive Worker" : "Restore Worker"}
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>{isActive ? "Archive Worker" : "Restore Worker"}</DialogTitle>
-                            <DialogDescription>
-                                {isActive
-                                    ? "Are you sure? This worker will be hidden from the daily list, but their history will remain saved."
-                                    : "This will restore the worker to the active daily list."
-                                }
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsArchiveDialogOpen(false)}>Cancel</Button>
-                            <Button variant={isActive ? "destructive" : "default"} onClick={handleToggleArchive}>
-                                {isActive ? "Yes, Archive" : "Restore"}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -254,21 +231,25 @@ export const LabourDetails = () => {
                                     {t('giveAdvance')}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
+                            <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                <DialogHeader className="px-6 py-4 border-b">
                                     <DialogTitle>{t('giveAdvance')} - {labour.name}</DialogTitle>
                                 </DialogHeader>
-                                <form onSubmit={handleAddAdvance} className="space-y-4 mt-4">
-                                    <div className="space-y-2">
-                                        <Label>{t('amount')} (₹)</Label>
-                                        <FormattedNumberInput required value={amount} onChange={(val) => setAmount(val.toString())} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('notes')}</Label>
-                                        <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
-                                    </div>
-                                    <Button type="submit" className="w-full">{t('save')}</Button>
-                                </form>
+                                <div className="flex-1 overflow-y-auto px-6 py-4">
+                                    <form id="advance-form" onSubmit={handleAddAdvance} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>{t('amount')} (₹)</Label>
+                                            <FormattedNumberInput required value={amount} onChange={(val) => setAmount(val.toString())} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('notes')}</Label>
+                                            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
+                                        </div>
+                                    </form>
+                                </div>
+                                <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                    <Button type="submit" form="advance-form" className="w-full">{t('save')}</Button>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
 
@@ -279,25 +260,29 @@ export const LabourDetails = () => {
                                     {t('payWage')}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
+                            <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                <DialogHeader className="px-6 py-4 border-b">
                                     <DialogTitle>{t('payWage')} - {labour.name}</DialogTitle>
                                 </DialogHeader>
-                                <form onSubmit={handleAddPayment} className="space-y-4 mt-4">
-                                    <div className="space-y-2">
-                                        <Label>{t('date')}</Label>
-                                        <Input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('amount')} (₹)</Label>
-                                        <FormattedNumberInput required value={amount} onChange={(val) => setAmount(val.toString())} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('notes')}</Label>
-                                        <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
-                                    </div>
-                                    <Button type="submit" className="w-full">{t('save')}</Button>
-                                </form>
+                                <div className="flex-1 overflow-y-auto px-6 py-4">
+                                    <form id="payment-form" onSubmit={handleAddPayment} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>{t('date')}</Label>
+                                            <Input type="date" value={paymentDate} onChange={e => setPaymentDate(e.target.value)} required />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('amount')} (₹)</Label>
+                                            <FormattedNumberInput required value={amount} onChange={(val) => setAmount(val.toString())} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('notes')}</Label>
+                                            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
+                                        </div>
+                                    </form>
+                                </div>
+                                <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                    <Button type="submit" form="payment-form" className="w-full">{t('save')}</Button>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </div>
