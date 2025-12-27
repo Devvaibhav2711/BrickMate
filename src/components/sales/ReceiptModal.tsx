@@ -139,8 +139,8 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
 
                     setTimeout(() => {
                         const message = isMarathi
-                            ? `*माऊली वीट उत्पादक पावती*\nकृपया डाउनलोड केलेली पावती जोडा.\n\nदिनांक: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nएकूण: ₹${sale.total_amount}`
-                            : `*MAULI VIT UTPADAK Receipt*\nPlease attach the downloaded receipt.\n\nDate: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nTotal: ₹${sale.total_amount}`;
+                            ? `*विठूमाऊली वीट उत्पादक पावती*\nकृपया डाउनलोड केलेली पावती जोडा.\n\nदिनांक: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nएकूण: ₹${sale.total_amount}`
+                            : `*VITHUMAULI VIT UTPADAK Receipt*\nPlease attach the downloaded receipt.\n\nDate: ${format(new Date(sale.date), 'dd/MM/yyyy')}\nTotal: ₹${sale.total_amount}`;
 
                         const mobile = customerMobile ? `91${customerMobile.replace(/\D/g, '')}` : '';
                         const url = `https://wa.me/${mobile}?text=${encodeURIComponent(message)}`;
@@ -174,7 +174,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         {/* Header Image */}
                         {/* Header Image Replacement */}
                         <div className="mb-4 text-center">
-                            <h1 className="text-2xl font-black text-[#e11d48] uppercase tracking-widest border-b-4 border-[#e11d48] inline-block pb-1">BRICKSMATE</h1>
+                            <h1 className="text-2xl font-black text-[#e11d48] uppercase tracking-widest border-b-4 border-[#e11d48] inline-block pb-1">विठूमाऊली वीट उत्पादक</h1>
                         </div>
 
                         {/* Address & Contact (Below Image) */}
@@ -234,9 +234,9 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                                     <span>{isMarathi ? 'जमा रक्कम' : 'Paid Amount'}</span>
                                     <span className="font-medium">- ₹{sale.amount_paid}</span>
                                 </div>
-                                <div className="flex justify-between bg-red-50 p-2 rounded-md items-center border border-red-100 mt-2">
-                                    <span className="text-red-800 font-bold text-sm uppercase">{isMarathi ? 'बाकी रक्कम' : 'BALANCE DUE'}</span>
-                                    <span className="text-red-700 font-extrabold text-xl">₹{sale.total_amount - sale.amount_paid}</span>
+                                <div className="flex justify-between bg-red-50 p-2 rounded-md items-center border border-red-100 mt-2 shadow-sm">
+                                    <span className="text-red-800 font-bold text-sm uppercase mr-4">{isMarathi ? 'बाकी रक्कम' : 'BALANCE DUE'}</span>
+                                    <span className="text-red-700 font-extrabold text-xl whitespace-nowrap">₹{sale.total_amount - sale.amount_paid}</span>
                                 </div>
                             </div>
                         </div>
