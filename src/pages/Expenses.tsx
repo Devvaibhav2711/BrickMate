@@ -178,12 +178,12 @@ export const Expenses = () => {
       />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-[32px] p-0 overflow-hidden max-h-[90vh]">
-          <div className="p-6 bg-gradient-to-b from-background to-muted/20 h-full overflow-y-auto">
-            <SheetHeader className="mb-6">
-              <SheetTitle className="text-left text-2xl font-bold">{t('addExpense')}</SheetTitle>
-            </SheetHeader>
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <SheetContent side="bottom" className="rounded-t-[32px] p-0 overflow-hidden max-h-[90dvh] flex flex-col gap-0">
+          <SheetHeader className="px-6 py-4 border-b">
+            <SheetTitle className="text-left text-2xl font-bold">{t('addExpense')}</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-4 bg-gradient-to-b from-background to-muted/20">
+            <form id="expense-form" onSubmit={handleSubmit} className="space-y-6">
 
               <div className="space-y-2">
                 <Label htmlFor="expenseAmount" className="text-muted-foreground">{t('amount')} (₹) *</Label>
@@ -244,17 +244,16 @@ export const Expenses = () => {
                   className={`bg-card resize-none ${errors.description ? "border-destructive" : ""}`}
                 />
               </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" className="flex-1 h-12 text-base rounded-xl" onClick={() => setIsSheetOpen(false)}>
-                  {t('cancel')}
-                </Button>
-                <Button type="submit" className="flex-1 h-12 text-base rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={addExpense.isPending}>
-                  <Plus className="w-5 h-5 mr-2" />
-                  {t('save')}
-                </Button>
-              </div>
             </form>
+          </div>
+          <div className="px-6 py-4 border-t bg-background sticky bottom-0 z-20 flex gap-3">
+            <Button type="button" variant="outline" className="flex-1 h-12 text-base rounded-xl" onClick={() => setIsSheetOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="submit" form="expense-form" className="flex-1 h-12 text-base rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={addExpense.isPending}>
+              <Plus className="w-5 h-5 mr-2" />
+              {t('save')}
+            </Button>
           </div>
         </SheetContent>
       </Sheet>

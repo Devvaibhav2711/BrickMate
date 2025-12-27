@@ -22,7 +22,11 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
     const { t } = useLanguage();
     const addPayment = useAddCustomerPayment();
 
-    const [paymentForm, setPaymentForm] = useState({
+    const [paymentForm, setPaymentForm] = useState<{
+        amount: string | number;
+        date: string;
+        notes: string;
+    }>({
         amount: '',
         date: format(new Date(), 'yyyy-MM-dd'),
         notes: ''
@@ -61,8 +65,8 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
 
     return (
         <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent side="bottom" className="rounded-t-3xl max-h-[90vh] overflow-y-auto">
-                <SheetHeader className="mb-4">
+            <SheetContent side="bottom" className="rounded-t-3xl max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
+                <SheetHeader className="px-6 py-4 border-b">
                     <SheetTitle className="text-left flex items-center gap-2">
                         <div className="bg-primary/10 p-2 rounded-full">
                             <Wallet className="w-5 h-5 text-primary" />
@@ -73,56 +77,57 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
                         </div>
                     </SheetTitle>
                 </SheetHeader>
-                <form onSubmit={handleAddPayment} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="paymentDate">{t('date')}</Label>
-                        <Input
-                            id="paymentDate"
-                            type="date"
-                            value={paymentForm.date}
-                            onChange={(e) => setPaymentForm({ ...paymentForm, date: e.target.value })}
-                            required
-                            className="bg-muted/30"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="paymentAmount">{t('amount')} *</Label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-2.5 text-lg font-semibold text-muted-foreground z-10">₹</span>
-                            <FormattedNumberInput
-                                id="paymentAmount"
-                                className="pl-8 text-lg font-semibold h-12 bg-muted/30"
-                                value={paymentForm.amount}
-                                onChange={(val) => setPaymentForm({ ...paymentForm, amount: val })}
-                                placeholder="0"
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                    <form id="payment-form" onSubmit={handleAddPayment} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="paymentDate">{t('date')}</Label>
+                            <Input
+                                id="paymentDate"
+                                type="date"
+                                value={paymentForm.date}
+                                onChange={(e) => setPaymentForm({ ...paymentForm, date: e.target.value })}
                                 required
-                                autoFocus
+                                className="bg-muted/30"
                             />
                         </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="paymentNotes">{t('notes')}</Label>
-                        <Textarea
-                            id="paymentNotes"
-                            value={paymentForm.notes}
-                            onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-                            placeholder={t('notes')}
-                            className="bg-muted/30 resize-none"
-                            rows={3}
-                        />
-                    </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="paymentAmount">{t('amount')} *</Label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-lg font-semibold text-muted-foreground z-10">₹</span>
+                                <FormattedNumberInput
+                                    id="paymentAmount"
+                                    className="pl-8 text-lg font-semibold h-12 bg-muted/30"
+                                    value={paymentForm.amount}
+                                    onChange={(val) => setPaymentForm({ ...paymentForm, amount: val })}
+                                    placeholder="0"
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
 
-                    <div className="flex gap-3 pt-2">
-                        <Button type="button" variant="outline" className="flex-1 h-12" onClick={onClose}>
-                            {t('cancel')}
-                        </Button>
-                        <Button type="submit" className="flex-1 h-12 text-base shadow-lg shadow-primary/20" disabled={addPayment.isPending}>
-                            {addPayment.isPending ? t('loadingText') : t('save')}
-                        </Button>
-                    </div>
-                </form>
+                        <div className="space-y-2">
+                            <Label htmlFor="paymentNotes">{t('notes')}</Label>
+                            <Textarea
+                                id="paymentNotes"
+                                value={paymentForm.notes}
+                                onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                                placeholder={t('notes')}
+                                className="bg-muted/30 resize-none"
+                                rows={3}
+                            />
+                        </div>
+                    </form>
+                </div>
+                <div className="px-6 py-4 border-t bg-background sticky bottom-0 z-20 flex gap-3">
+                    <Button type="button" variant="outline" className="flex-1 h-12" onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button type="submit" form="payment-form" className="flex-1 h-12 text-base shadow-lg shadow-primary/20" disabled={addPayment.isPending}>
+                        {addPayment.isPending ? t('loadingText') : t('save')}
+                    </Button>
+                </div>
             </SheetContent>
         </Sheet>
     );

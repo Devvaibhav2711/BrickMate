@@ -559,39 +559,41 @@ const Admin = () => {
                                                                         </Button>
                                                                     </DialogTrigger>
                                                                     {editingCustomer?.id === customer.id && (
-                                                                        <DialogContent>
-                                                                            <DialogHeader>
+                                                                        <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                                                            <DialogHeader className="px-6 py-4 border-b">
                                                                                 <DialogTitle>{t('updateCustomer')}</DialogTitle>
                                                                             </DialogHeader>
-                                                                            <form onSubmit={handleUpdateCustomer} className="space-y-4">
-                                                                                <div className="space-y-2">
-                                                                                    <Label>{t('customerName')}</Label>
-                                                                                    <Input
-                                                                                        value={editingCustomer.name}
-                                                                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
-                                                                                        className={formErrors.name ? "border-destructive" : ""}
-                                                                                    />
-                                                                                </div>
-                                                                                <div className="space-y-2">
-                                                                                    <Label>{t('mobileNumber')}</Label>
-                                                                                    <Input
-                                                                                        value={editingCustomer.mobile || ''}
-                                                                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, mobile: e.target.value })}
-                                                                                        className={formErrors.mobile ? "border-destructive" : ""}
-                                                                                    />
-                                                                                </div>
-                                                                                <div className="space-y-2">
-                                                                                    <Label>{t('address')}</Label>
-                                                                                    <Input
-                                                                                        value={editingCustomer.address || ''}
-                                                                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, address: e.target.value })}
-                                                                                        className={formErrors.address ? "border-destructive" : ""}
-                                                                                    />
-                                                                                </div>
-                                                                                <DialogFooter>
-                                                                                    <Button type="submit">{t('updateCustomer')}</Button>
-                                                                                </DialogFooter>
-                                                                            </form>
+                                                                            <div className="flex-1 overflow-y-auto px-6 py-4">
+                                                                                <form id="edit-customer-form" onSubmit={handleUpdateCustomer} className="space-y-4">
+                                                                                    <div className="space-y-2">
+                                                                                        <Label>{t('customerName')}</Label>
+                                                                                        <Input
+                                                                                            value={editingCustomer.name}
+                                                                                            onChange={(e) => setEditingCustomer({ ...editingCustomer, name: e.target.value })}
+                                                                                            className={formErrors.name ? "border-destructive" : ""}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <div className="space-y-2">
+                                                                                        <Label>{t('mobileNumber')}</Label>
+                                                                                        <Input
+                                                                                            value={editingCustomer.mobile || ''}
+                                                                                            onChange={(e) => setEditingCustomer({ ...editingCustomer, mobile: e.target.value })}
+                                                                                            className={formErrors.mobile ? "border-destructive" : ""}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <div className="space-y-2">
+                                                                                        <Label>{t('address')}</Label>
+                                                                                        <Input
+                                                                                            value={editingCustomer.address || ''}
+                                                                                            onChange={(e) => setEditingCustomer({ ...editingCustomer, address: e.target.value })}
+                                                                                            className={formErrors.address ? "border-destructive" : ""}
+                                                                                        />
+                                                                                    </div>
+                                                                                </form>
+                                                                            </div>
+                                                                            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                                                                <Button type="submit" form="edit-customer-form">{t('updateCustomer')}</Button>
+                                                                            </DialogFooter>
                                                                         </DialogContent>
                                                                     )}
                                                                 </Dialog>
@@ -690,41 +692,43 @@ const Admin = () => {
                                                         </Button>
                                                     </DialogTrigger>
                                                     {editingSale?.id === sale.id && (
-                                                        <DialogContent className="sm:max-w-[425px]">
-                                                            <DialogHeader>
+                                                        <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                                            <DialogHeader className="px-6 py-4 border-b">
                                                                 <DialogTitle>{t('updateSale')}</DialogTitle>
                                                             </DialogHeader>
-                                                            <form onSubmit={handleUpdateSale} className="space-y-4">
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('date')}</Label>
-                                                                        <Input type="date" value={editingSale.date} onChange={(e) => setEditingSale({ ...editingSale, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                                            <div className="flex-1 overflow-y-auto px-6 py-4">
+                                                                <form id="edit-sale-form" onSubmit={handleUpdateSale} className="space-y-4">
+                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('date')}</Label>
+                                                                            <Input type="date" value={editingSale.date} onChange={(e) => setEditingSale({ ...editingSale, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('ratePerBrick')}</Label>
+                                                                            <FormattedNumberInput value={editingSale.rate_per_brick} onChange={(val) => setEditingSale({ ...editingSale, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('quantity')}</Label>
+                                                                            <FormattedNumberInput value={editingSale.quantity} onChange={(val) => setEditingSale({ ...editingSale, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('amountPaid')}</Label>
+                                                                            <FormattedNumberInput value={editingSale.amount_paid} onChange={(val) => setEditingSale({ ...editingSale, amount_paid: val })} />
+                                                                        </div>
+                                                                        <div className="col-span-2 space-y-2">
+                                                                            <Label>{t('notes')}</Label>
+                                                                            <Input
+                                                                                value={editingSale.notes || ''}
+                                                                                onChange={(e) => setEditingSale({ ...editingSale, notes: e.target.value })}
+                                                                                placeholder={t('notes')}
+                                                                            />
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('ratePerBrick')}</Label>
-                                                                        <FormattedNumberInput value={editingSale.rate_per_brick} onChange={(val) => setEditingSale({ ...editingSale, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('quantity')}</Label>
-                                                                        <FormattedNumberInput value={editingSale.quantity} onChange={(val) => setEditingSale({ ...editingSale, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('amountPaid')}</Label>
-                                                                        <FormattedNumberInput value={editingSale.amount_paid} onChange={(val) => setEditingSale({ ...editingSale, amount_paid: val })} />
-                                                                    </div>
-                                                                    <div className="col-span-2 space-y-2">
-                                                                        <Label>{t('notes')}</Label>
-                                                                        <Input
-                                                                            value={editingSale.notes || ''}
-                                                                            onChange={(e) => setEditingSale({ ...editingSale, notes: e.target.value })}
-                                                                            placeholder={t('notes')}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                                <DialogFooter>
-                                                                    <Button type="submit">{t('updateSale')}</Button>
-                                                                </DialogFooter>
-                                                            </form>
+                                                                </form>
+                                                            </div>
+                                                            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                                                <Button type="submit" form="edit-sale-form">{t('updateSale')}</Button>
+                                                            </DialogFooter>
                                                         </DialogContent>
                                                     )}
                                                 </Dialog>
@@ -750,51 +754,53 @@ const Admin = () => {
                                     {t('addProduction')}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
+                            <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                <DialogHeader className="px-6 py-4 border-b">
                                     <DialogTitle>{t('addProduction')}</DialogTitle>
                                 </DialogHeader>
-                                <form onSubmit={handleAddProduction} className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>{t('date')}</Label>
-                                            <Input type="date" value={newProduction.date} onChange={e => setNewProduction({ ...newProduction, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                <div className="flex-1 overflow-y-auto px-6 py-4">
+                                    <form id="add-production-form" onSubmit={handleAddProduction} className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>{t('date')}</Label>
+                                                <Input type="date" value={newProduction.date} onChange={e => setNewProduction({ ...newProduction, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>{t('worker')}/{t('team')}</Label>
+                                                <Select value={newProduction.labour_id} onValueChange={val => setNewProduction({ ...newProduction, labour_id: val })}>
+                                                    <SelectTrigger><SelectValue placeholder={t('selectLabour')} /></SelectTrigger>
+                                                    <SelectContent>
+                                                        {labour?.map(l => (
+                                                            <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>{t('quantity')}</Label>
+                                                <FormattedNumberInput value={newProduction.quantity} onChange={val => setNewProduction({ ...newProduction, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>{t('ratePerBrick')}</Label>
+                                                <FormattedNumberInput value={newProduction.rate_per_brick} onChange={val => setNewProduction({ ...newProduction, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
+                                            </div>
+                                            <div className="col-span-2 space-y-2">
+                                                <Label>{t('notes')}</Label>
+                                                <Input
+                                                    value={newProduction.notes || ''}
+                                                    onChange={e => setNewProduction({ ...newProduction, notes: e.target.value })}
+                                                    placeholder={t('notes')}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>{t('worker')}/{t('team')}</Label>
-                                            <Select value={newProduction.labour_id} onValueChange={val => setNewProduction({ ...newProduction, labour_id: val })}>
-                                                <SelectTrigger><SelectValue placeholder={t('selectLabour')} /></SelectTrigger>
-                                                <SelectContent>
-                                                    {labour?.map(l => (
-                                                        <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                        <div className="bg-muted p-2 rounded text-sm text-right font-bold">
+                                            Total: {formatCurrency(Number(newProduction.quantity || 0) * Number(newProduction.rate_per_brick || 0))}
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label>{t('quantity')}</Label>
-                                            <FormattedNumberInput value={newProduction.quantity} onChange={val => setNewProduction({ ...newProduction, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>{t('ratePerBrick')}</Label>
-                                            <FormattedNumberInput value={newProduction.rate_per_brick} onChange={val => setNewProduction({ ...newProduction, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
-                                        </div>
-                                        <div className="col-span-2 space-y-2">
-                                            <Label>{t('notes')}</Label>
-                                            <Input
-                                                value={newProduction.notes || ''}
-                                                onChange={e => setNewProduction({ ...newProduction, notes: e.target.value })}
-                                                placeholder={t('notes')}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="bg-muted p-2 rounded text-sm text-right font-bold">
-                                        Total: {formatCurrency(Number(newProduction.quantity || 0) * Number(newProduction.rate_per_brick || 0))}
-                                    </div>
-                                    <DialogFooter>
-                                        <Button type="submit">{t('saveRecord')}</Button>
-                                    </DialogFooter>
-                                </form>
+                                    </form>
+                                </div>
+                                <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                    <Button type="submit" form="add-production-form">{t('saveRecord')}</Button>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -832,33 +838,35 @@ const Admin = () => {
                                                         </Button>
                                                     </DialogTrigger>
                                                     {editingProduction?.id === p.id && (
-                                                        <DialogContent>
-                                                            <DialogHeader><DialogTitle>{t('edit')}</DialogTitle></DialogHeader>
-                                                            <form onSubmit={handleUpdateProduction} className="space-y-4">
-                                                                <div className="grid grid-cols-2 gap-4">
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('date')}</Label>
-                                                                        <Input type="date" value={editingProduction.date} onChange={e => setEditingProduction({ ...editingProduction, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                                        <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                                            <DialogHeader className="px-6 py-4 border-b"><DialogTitle>{t('edit')}</DialogTitle></DialogHeader>
+                                                            <div className="flex-1 overflow-y-auto px-6 py-4">
+                                                                <form id="edit-production-form" onSubmit={handleUpdateProduction} className="space-y-4">
+                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('date')}</Label>
+                                                                            <Input type="date" value={editingProduction.date} onChange={e => setEditingProduction({ ...editingProduction, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('quantity')}</Label>
+                                                                            <FormattedNumberInput value={editingProduction.quantity} onChange={val => setEditingProduction({ ...editingProduction, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="space-y-2">
+                                                                            <Label>{t('ratePerBrick')}</Label>
+                                                                            <FormattedNumberInput value={editingProduction.rate_per_brick} onChange={val => setEditingProduction({ ...editingProduction, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
+                                                                        </div>
+                                                                        <div className="col-span-2 space-y-2">
+                                                                            <Label>{t('notes')}</Label>
+                                                                            <Input
+                                                                                value={editingProduction.notes || ''}
+                                                                                onChange={e => setEditingProduction({ ...editingProduction, notes: e.target.value })}
+                                                                                placeholder={t('notes')}
+                                                                            />
+                                                                        </div>
                                                                     </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('quantity')}</Label>
-                                                                        <FormattedNumberInput value={editingProduction.quantity} onChange={val => setEditingProduction({ ...editingProduction, quantity: val })} className={formErrors.quantity ? "border-destructive" : ""} />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label>{t('ratePerBrick')}</Label>
-                                                                        <FormattedNumberInput value={editingProduction.rate_per_brick} onChange={val => setEditingProduction({ ...editingProduction, rate_per_brick: val })} className={formErrors.rate_per_brick ? "border-destructive" : ""} />
-                                                                    </div>
-                                                                    <div className="col-span-2 space-y-2">
-                                                                        <Label>{t('notes')}</Label>
-                                                                        <Input
-                                                                            value={editingProduction.notes || ''}
-                                                                            onChange={e => setEditingProduction({ ...editingProduction, notes: e.target.value })}
-                                                                            placeholder={t('notes')}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                                <DialogFooter><Button type="submit">{t('save')}</Button></DialogFooter>
-                                                            </form>
+                                                                </form>
+                                                            </div>
+                                                            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20"><Button type="submit" form="edit-production-form">{t('save')}</Button></DialogFooter>
                                                         </DialogContent>
                                                     )}
                                                 </Dialog>
@@ -908,44 +916,46 @@ const Admin = () => {
                                                         </Button>
                                                     </DialogTrigger>
                                                     {editingLabour?.id === l.id && (
-                                                        <DialogContent>
-                                                            <DialogHeader>
+                                                        <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                                            <DialogHeader className="px-6 py-4 border-b">
                                                                 <DialogTitle>{t('edit')}</DialogTitle>
                                                             </DialogHeader>
-                                                            <form onSubmit={handleUpdateLabour} className="space-y-4">
-                                                                <div className="space-y-2">
-                                                                    <Label>{t('labourName')}</Label>
-                                                                    <Input value={editingLabour.name} onChange={(e) => setEditingLabour({ ...editingLabour, name: e.target.value })} />
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <Label>{t('role')}</Label>
-                                                                    <Select value={editingLabour.work_type} onValueChange={(val: any) => setEditingLabour({ ...editingLabour, work_type: val })}>
-                                                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                                                        <SelectContent>
-                                                                            <SelectItem value="moulding">{t('moulding')}</SelectItem>
-                                                                            <SelectItem value="stacking">{t('stacking')}</SelectItem>
-                                                                            <SelectItem value="loading">{t('loading')}</SelectItem>
-                                                                            <SelectItem value="general">{t('general')}</SelectItem>
-                                                                        </SelectContent>
-                                                                    </Select>
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <Label>{t('dailyWage')}</Label>
-                                                                    <Input type="number" value={editingLabour.daily_wage} onChange={(e) => setEditingLabour({ ...editingLabour, daily_wage: Number(e.target.value) })} />
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <Label>{t('pin')}</Label>
-                                                                    <Input
-                                                                        type="text"
-                                                                        value={editingLabour.pin || ''}
-                                                                        onChange={(e) => setEditingLabour({ ...editingLabour, pin: e.target.value })}
-                                                                        placeholder={t('setPin')}
-                                                                    />
-                                                                </div>
-                                                                <DialogFooter>
-                                                                    <Button type="submit">{t('updateWorker')}</Button>
-                                                                </DialogFooter>
-                                                            </form>
+                                                            <div className="flex-1 overflow-y-auto px-6 py-4">
+                                                                <form id="edit-labour-form" onSubmit={handleUpdateLabour} className="space-y-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label>{t('labourName')}</Label>
+                                                                        <Input value={editingLabour.name} onChange={(e) => setEditingLabour({ ...editingLabour, name: e.target.value })} />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label>{t('role')}</Label>
+                                                                        <Select value={editingLabour.work_type} onValueChange={(val: any) => setEditingLabour({ ...editingLabour, work_type: val })}>
+                                                                            <SelectTrigger><SelectValue /></SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <SelectItem value="moulding">{t('moulding')}</SelectItem>
+                                                                                <SelectItem value="stacking">{t('stacking')}</SelectItem>
+                                                                                <SelectItem value="loading">{t('loading')}</SelectItem>
+                                                                                <SelectItem value="general">{t('general')}</SelectItem>
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label>{t('dailyWage')}</Label>
+                                                                        <Input type="number" value={editingLabour.daily_wage} onChange={(e) => setEditingLabour({ ...editingLabour, daily_wage: Number(e.target.value) })} />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label>{t('pin')}</Label>
+                                                                        <Input
+                                                                            type="text"
+                                                                            value={editingLabour.pin || ''}
+                                                                            onChange={(e) => setEditingLabour({ ...editingLabour, pin: e.target.value })}
+                                                                            placeholder={t('setPin')}
+                                                                        />
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                            <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
+                                                                <Button type="submit" form="edit-labour-form">{t('updateWorker')}</Button>
+                                                            </DialogFooter>
                                                         </DialogContent>
                                                     )}
                                                 </Dialog>
@@ -971,41 +981,43 @@ const Admin = () => {
                                     {t('addExpense')}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader><DialogTitle>{t('addExpense')}</DialogTitle></DialogHeader>
-                                <form onSubmit={handleAddExpense} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>{t('date')}</Label>
-                                        <Input type="date" value={newExpense.date} onChange={e => setNewExpense({ ...newExpense, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('category')}</Label>
-                                        <Select value={newExpense.category} onValueChange={(val: any) => setNewExpense({ ...newExpense, category: val })}>
-                                            <SelectTrigger><SelectValue /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
-                                                <SelectItem value="transport">{t('transport')}</SelectItem>
-                                                <SelectItem value="labour">{t('labour')}</SelectItem>
-                                                <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
-                                                <SelectItem value="other">{t('other')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('amount')}</Label>
-                                        <FormattedNumberInput
-                                            value={newExpense.amount || ''}
-                                            onChange={(val) => setNewExpense({ ...newExpense, amount: val })}
-                                            className={formErrors.amount ? "border-destructive" : ""}
-                                            placeholder={t('amount')}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>{t('description')}</Label>
-                                        <Input value={newExpense.description || ''} onChange={e => setNewExpense({ ...newExpense, description: e.target.value })} className={formErrors.description ? "border-destructive" : ""} />
-                                    </div>
-                                    <DialogFooter><Button type="submit">{t('save')}</Button></DialogFooter>
-                                </form>
+                            <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                                <DialogHeader className="px-6 py-4 border-b"><DialogTitle>{t('addExpense')}</DialogTitle></DialogHeader>
+                                <div className="flex-1 overflow-y-auto px-6 py-4">
+                                    <form id="add-expense-form" onSubmit={handleAddExpense} className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>{t('date')}</Label>
+                                            <Input type="date" value={newExpense.date} onChange={e => setNewExpense({ ...newExpense, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('category')}</Label>
+                                            <Select value={newExpense.category} onValueChange={(val: any) => setNewExpense({ ...newExpense, category: val })}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
+                                                    <SelectItem value="transport">{t('transport')}</SelectItem>
+                                                    <SelectItem value="labour">{t('labour')}</SelectItem>
+                                                    <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
+                                                    <SelectItem value="other">{t('other')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('amount')}</Label>
+                                            <FormattedNumberInput
+                                                value={newExpense.amount || ''}
+                                                onChange={(val) => setNewExpense({ ...newExpense, amount: val })}
+                                                className={formErrors.amount ? "border-destructive" : ""}
+                                                placeholder={t('amount')}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('description')}</Label>
+                                            <Input value={newExpense.description || ''} onChange={e => setNewExpense({ ...newExpense, description: e.target.value })} className={formErrors.description ? "border-destructive" : ""} />
+                                        </div>
+                                    </form>
+                                </div>
+                                <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20"><Button type="submit" form="add-expense-form">{t('save')}</Button></DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -1070,40 +1082,42 @@ const Admin = () => {
 
             {editingExpense && (
                 <Dialog open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
-                    <DialogContent>
-                        <DialogHeader><DialogTitle>{t('edit')}</DialogTitle></DialogHeader>
-                        <form onSubmit={handleUpdateExpense} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>{t('category')}</Label>
-                                <Select value={editingExpense.category} onValueChange={(val: any) => setEditingExpense({ ...editingExpense, category: val })}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
-                                        <SelectItem value="transport">{t('transport')}</SelectItem>
-                                        <SelectItem value="labour">{t('labour')}</SelectItem>
-                                        <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
-                                        <SelectItem value="other">{t('other')}</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>{t('date')}</Label>
-                                <Input type="date" value={editingExpense.date} onChange={e => setEditingExpense({ ...editingExpense, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>{t('amount')}</Label>
-                                <FormattedNumberInput
-                                    value={editingExpense.amount}
-                                    onChange={(val) => setEditingExpense({ ...editingExpense, amount: val })}
-                                    className={formErrors.amount ? "border-destructive" : ""}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>{t('description')}</Label>
-                                <Input value={editingExpense.description || ''} onChange={e => setEditingExpense({ ...editingExpense, description: e.target.value })} className={formErrors.description ? "border-destructive" : ""} />
-                            </div>
-                            <DialogFooter><Button type="submit">{t('save')}</Button></DialogFooter>
-                        </form>
+                    <DialogContent className="sm:max-w-[425px] flex flex-col p-0 gap-0 overflow-hidden max-h-[90dvh]">
+                        <DialogHeader className="px-6 py-4 border-b"><DialogTitle>{t('edit')}</DialogTitle></DialogHeader>
+                        <div className="flex-1 overflow-y-auto px-6 py-4">
+                            <form id="edit-expense-form" onSubmit={handleUpdateExpense} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>{t('category')}</Label>
+                                    <Select value={editingExpense.category} onValueChange={(val: any) => setEditingExpense({ ...editingExpense, category: val })}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="raw_material">{t('rawMaterial')}</SelectItem>
+                                            <SelectItem value="transport">{t('transport')}</SelectItem>
+                                            <SelectItem value="labour">{t('labour')}</SelectItem>
+                                            <SelectItem value="maintenance">{t('maintenance')}</SelectItem>
+                                            <SelectItem value="other">{t('other')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('date')}</Label>
+                                    <Input type="date" value={editingExpense.date} onChange={e => setEditingExpense({ ...editingExpense, date: e.target.value })} className={formErrors.date ? "border-destructive" : ""} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('amount')}</Label>
+                                    <FormattedNumberInput
+                                        value={editingExpense.amount}
+                                        onChange={(val) => setEditingExpense({ ...editingExpense, amount: val })}
+                                        className={formErrors.amount ? "border-destructive" : ""}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('description')}</Label>
+                                    <Input value={editingExpense.description || ''} onChange={e => setEditingExpense({ ...editingExpense, description: e.target.value })} className={formErrors.description ? "border-destructive" : ""} />
+                                </div>
+                            </form>
+                        </div>
+                        <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20"><Button type="submit" form="edit-expense-form">{t('save')}</Button></DialogFooter>
                     </DialogContent>
                 </Dialog>
             )}

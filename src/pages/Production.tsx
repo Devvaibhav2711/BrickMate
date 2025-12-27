@@ -155,123 +155,125 @@ export const Production = () => {
       />
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <SheetHeader>
+        <SheetContent side="bottom" className="rounded-t-3xl max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
+          <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="text-left">{t('addProduction')}</SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date">{t('date')} *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required
-                />
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <form id="production-form" onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date">{t('date')} *</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>{t('selectLabour')} *</Label>
+                  <Select
+                    value={formData.labour_id || ''}
+                    onValueChange={(value) => setFormData({ ...formData, labour_id: value || undefined })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('selectLabour')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {labourList?.map((worker) => (
+                        <SelectItem key={worker.id} value={worker.id}>
+                          {worker.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="productionQuantity">{t('quantity')} *</Label>
+                  <FormattedNumberInput
+                    id="productionQuantity"
+                    value={formData.quantity || ''}
+                    onChange={(val) => setFormData({ ...formData, quantity: val })}
+                    placeholder="1000"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="productionRate">{t('ratePer1000')} *</Label>
+                  <FormattedNumberInput
+                    id="productionRate"
+                    value={formData.rate_per_brick || ''}
+                    onChange={(val) => setFormData({ ...formData, rate_per_brick: val })}
+                    placeholder="Rate"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>{t('selectLabour')} *</Label>
-                <Select
-                  value={formData.labour_id || ''}
-                  onValueChange={(value) => setFormData({ ...formData, labour_id: value || undefined })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('selectLabour')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {labourList?.map((worker) => (
-                      <SelectItem key={worker.id} value={worker.id}>
-                        {worker.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="team">{t('bhattiNo')} *</Label>
+                  <Select
+                    value={formData.team_name || ''}
+                    onValueChange={(value) => setFormData({ ...formData, team_name: value })}
+                    required
+                  >
+                    <SelectTrigger id="team">
+                      <SelectValue placeholder={t('bhattiNo')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">{t('notes')}</Label>
+                  <Input
+                    id="notes"
+                    value={formData.notes || ''}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Optional details"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="productionQuantity">{t('quantity')} *</Label>
-                <FormattedNumberInput
-                  id="productionQuantity"
-                  value={formData.quantity || ''}
-                  onChange={(val) => setFormData({ ...formData, quantity: val })}
-                  placeholder="1000"
-                  required
-                />
+              <div className="bg-muted p-3 rounded-lg flex justify-between items-center font-bold">
+                <span>Total Amount:</span>
+                <span className="text-primary">
+                  {formatCurrency(Number(formData.quantity || 0) * Number(formData.rate_per_brick || 0))}
+                </span>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="productionRate">{t('ratePer1000')} *</Label>
-                <FormattedNumberInput
-                  id="productionRate"
-                  value={formData.rate_per_brick || ''}
-                  onChange={(val) => setFormData({ ...formData, rate_per_brick: val })}
-                  placeholder="Rate"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="team">{t('bhattiNo')} *</Label>
-                <Select
-                  value={formData.team_name || ''}
-                  onValueChange={(value) => setFormData({ ...formData, team_name: value })}
-                  required
-                >
-                  <SelectTrigger id="team">
-                    <SelectValue placeholder={t('bhattiNo')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">{t('notes')}</Label>
-                <Input
-                  id="notes"
-                  value={formData.notes || ''}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="Optional details"
-                />
-              </div>
-            </div>
-
-            <div className="bg-muted p-3 rounded-lg flex justify-between items-center font-bold">
-              <span>Total Amount:</span>
-              <span className="text-primary">
-                {formatCurrency(Number(formData.quantity || 0) * Number(formData.rate_per_brick || 0))}
-              </span>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setIsSheetOpen(false)}
-              >
-                {t('cancel')}
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1"
-                disabled={addProduction.isPending}
-              >
-                <Plus className="w-4 h-4" />
-                {t('save')}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </div>
+          <div className="px-6 py-4 border-t bg-background sticky bottom-0 z-20 flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setIsSheetOpen(false)}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              type="submit"
+              form="production-form"
+              className="flex-1"
+              disabled={addProduction.isPending}
+            >
+              <Plus className="w-4 h-4" />
+              {t('save')}
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
 

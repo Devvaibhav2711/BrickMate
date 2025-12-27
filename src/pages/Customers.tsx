@@ -276,148 +276,150 @@ export const Customers = () => {
 
       {/* Add Customer Sheet */}
       <Sheet open={isCustomerSheetOpen} onOpenChange={setIsCustomerSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl">
-          <SheetHeader>
+        <SheetContent side="bottom" className="rounded-t-3xl max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
+          <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="text-left">{t('addCustomer')}</SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleAddCustomer} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label htmlFor="customerName">{t('customerName')} *</Label>
-              <Input
-                id="customerName"
-                value={customerForm.name}
-                onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                placeholder={t('enterName')}
-                required
-                className={customerErrors.name ? "border-destructive" : ""}
-              />
-            </div>
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <form id="customer-form" onSubmit={handleAddCustomer} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="customerName">{t('customerName')} *</Label>
+                <Input
+                  id="customerName"
+                  value={customerForm.name}
+                  onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                  placeholder={t('enterName')}
+                  required
+                  className={customerErrors.name ? "border-destructive" : ""}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="customerMobile">{t('mobileNumber')}</Label>
-              <Input
-                id="customerMobile"
-                type="tel"
-                value={customerForm.mobile}
-                onChange={(e) => setCustomerForm({ ...customerForm, mobile: e.target.value })}
-                placeholder="9876543210"
-                className={customerErrors.mobile ? "border-destructive" : ""}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="customerMobile">{t('mobileNumber')}</Label>
+                <Input
+                  id="customerMobile"
+                  type="tel"
+                  value={customerForm.mobile}
+                  onChange={(e) => setCustomerForm({ ...customerForm, mobile: e.target.value })}
+                  placeholder="9876543210"
+                  className={customerErrors.mobile ? "border-destructive" : ""}
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="customerAddress">{t('address')}</Label>
-              <Textarea
-                id="customerAddress"
-                value={customerForm.address}
-                onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
-                placeholder={t('address')}
-                rows={2}
-                className={customerErrors.address ? "border-destructive" : ""}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsCustomerSheetOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" className="flex-1" disabled={addCustomer.isPending}>
-                <Plus className="w-4 h-4" />
-                {t('save')}
-              </Button>
-            </div>
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="customerAddress">{t('address')}</Label>
+                <Textarea
+                  id="customerAddress"
+                  value={customerForm.address}
+                  onChange={(e) => setCustomerForm({ ...customerForm, address: e.target.value })}
+                  placeholder={t('address')}
+                  rows={2}
+                  className={customerErrors.address ? "border-destructive" : ""}
+                />
+              </div>
+            </form>
+          </div>
+          <div className="px-6 py-4 border-t bg-background sticky bottom-0 z-20 flex gap-3">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setIsCustomerSheetOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="submit" form="customer-form" className="flex-1" disabled={addCustomer.isPending}>
+              <Plus className="w-4 h-4" />
+              {t('save')}
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
 
       {/* Add Sale Sheet */}
       <Sheet open={isSaleSheetOpen} onOpenChange={setIsSaleSheetOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl max-h-[90vh] overflow-y-auto">
-          <SheetHeader>
+        <SheetContent side="bottom" className="rounded-t-3xl max-h-[90dvh] flex flex-col p-0 gap-0 overflow-hidden">
+          <SheetHeader className="px-6 py-4 border-b">
             <SheetTitle className="text-left">{t('addSale')}</SheetTitle>
           </SheetHeader>
-          <form onSubmit={handleAddSale} className="space-y-4 mt-4">
-            <div className="space-y-2">
-              <Label>{t('customerName')} *</Label>
-              <Select
-                value={saleForm.customer_id}
-                onValueChange={(value) => setSaleForm({ ...saleForm, customer_id: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t('customerName')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {customers?.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="saleDate">{t('date')} *</Label>
-              <Input
-                id="saleDate"
-                type="date"
-                value={saleForm.date}
-                onChange={(e) => setSaleForm({ ...saleForm, date: e.target.value })}
-                required
-                className={saleErrors.date ? "border-destructive" : ""}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            <form id="sale-form" onSubmit={handleAddSale} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="saleQty">{t('quantity')} *</Label>
-                <FormattedNumberInput
-                  id="saleQty"
-                  value={saleForm.quantity || ''}
-                  onChange={(val) => setSaleForm({ ...saleForm, quantity: val })}
-                  placeholder="1000"
+                <Label>{t('customerName')} *</Label>
+                <Select
+                  value={saleForm.customer_id}
+                  onValueChange={(value) => setSaleForm({ ...saleForm, customer_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('customerName')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="saleDate">{t('date')} *</Label>
+                <Input
+                  id="saleDate"
+                  type="date"
+                  value={saleForm.date}
+                  onChange={(e) => setSaleForm({ ...saleForm, date: e.target.value })}
                   required
-                  className={saleErrors.quantity ? "border-destructive" : ""}
+                  className={saleErrors.date ? "border-destructive" : ""}
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="saleQty">{t('quantity')} *</Label>
+                  <FormattedNumberInput
+                    id="saleQty"
+                    value={saleForm.quantity || ''}
+                    onChange={(val) => setSaleForm({ ...saleForm, quantity: val })}
+                    placeholder="1000"
+                    required
+                    className={saleErrors.quantity ? "border-destructive" : ""}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rate">{t('ratePerBrick')} *</Label>
+                  <FormattedNumberInput
+                    id="rate"
+                    value={saleForm.rate_per_brick || ''}
+                    onChange={(val) => setSaleForm({ ...saleForm, rate_per_brick: val })}
+                    placeholder="8.50"
+                    required
+                    className={saleErrors.rate_per_brick ? "border-destructive" : ""}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-accent/50 rounded-lg p-3">
+                <p className="text-sm text-muted-foreground">{t('totalAmount')}</p>
+                <p className="text-xl font-bold text-foreground">
+                  {formatCurrency(saleForm.quantity * saleForm.rate_per_brick)}
+                </p>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="rate">{t('ratePerBrick')} *</Label>
+                <Label htmlFor="amountPaid">{t('amountPaid')}</Label>
                 <FormattedNumberInput
-                  id="rate"
-                  value={saleForm.rate_per_brick || ''}
-                  onChange={(val) => setSaleForm({ ...saleForm, rate_per_brick: val })}
-                  placeholder="8.50"
-                  required
-                  className={saleErrors.rate_per_brick ? "border-destructive" : ""}
+                  id="amountPaid"
+                  value={saleForm.amount_paid || ''}
+                  onChange={(val) => setSaleForm({ ...saleForm, amount_paid: val })}
+                  placeholder="0"
                 />
               </div>
-            </div>
-
-            <div className="bg-accent/50 rounded-lg p-3">
-              <p className="text-sm text-muted-foreground">{t('totalAmount')}</p>
-              <p className="text-xl font-bold text-foreground">
-                {formatCurrency(saleForm.quantity * saleForm.rate_per_brick)}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="amountPaid">{t('amountPaid')}</Label>
-              <FormattedNumberInput
-                id="amountPaid"
-                value={saleForm.amount_paid || ''}
-                onChange={(val) => setSaleForm({ ...saleForm, amount_paid: val })}
-                placeholder="0"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsSaleSheetOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" className="flex-1" disabled={addSale.isPending}>
-                <Plus className="w-4 h-4" />
-                {t('save')}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </div>
+          <div className="px-6 py-4 border-t bg-background sticky bottom-0 z-20 flex gap-3">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setIsSaleSheetOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button type="submit" form="sale-form" className="flex-1" disabled={addSale.isPending}>
+              <Plus className="w-4 h-4" />
+              {t('save')}
+            </Button>
+          </div>
         </SheetContent>
       </Sheet>
 
