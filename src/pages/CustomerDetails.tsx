@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Printer, Phone, MapPin, Plus, Wallet, Share2 } from 'lucide-react';
+import { ArrowLeft, Printer, Phone, MapPin, Plus, Wallet, Share2, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -92,12 +92,18 @@ export const CustomerDetails = () => {
 
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                if (isMobile && navigator.share) {
                     try {
-                        await navigator.share({
+                        const shareData = {
                             files: [file],
                             title: 'Invoice'
-                        });
+                        };
+
+                        if (navigator.canShare && !navigator.canShare(shareData)) {
+                            console.warn("navigator.canShare returned false, trying anyway...");
+                        }
+
+                        await navigator.share(shareData);
                         toast.success("Shared successfully", { id: toastId });
                     } catch (err) {
                         if ((err as Error).name !== 'AbortError') {
@@ -146,6 +152,59 @@ export const CustomerDetails = () => {
         } catch (e) {
             console.error(e);
             toast.error("Failed to process invoice", { id: toastId });
+            setIsConverting(false);
+        }
+    };
+
+    const handleDownloadImage = async (templateRef: HTMLDivElement | null) => {
+        if (!templateRef) return;
+        setIsConverting(true);
+        const toastId = toast.loading("Preparing download...");
+
+        try {
+            // 1. Clone element for A4 capture
+            const clone = templateRef.cloneNode(true) as HTMLElement;
+            clone.style.position = 'fixed';
+            clone.style.top = '-10000px';
+            clone.style.left = '-10000px';
+            clone.style.width = '210mm';
+            clone.style.height = 'auto'; // Let content flow
+            clone.style.minHeight = '297mm';
+            clone.style.zIndex = '-9999';
+            clone.style.background = 'white';
+            clone.style.transform = 'none';
+            document.body.appendChild(clone);
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const canvas = await html2canvas(clone, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                width: 794,
+                windowWidth: 1000,
+            });
+
+            document.body.removeChild(clone);
+
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    toast.error("Failed to generate file", { id: toastId });
+                    setIsConverting(false);
+                    return;
+                }
+                const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                toast.success("Invoice Downloaded", { id: toastId });
+                setIsConverting(false);
+            }, 'image/png');
+
+        } catch (e) {
+            console.error(e);
+            toast.error("Download failed", { id: toastId });
             setIsConverting(false);
         }
     };
@@ -296,36 +355,15 @@ export const CustomerDetails = () => {
         (payments?.reduce((sum, p) => sum + p.amount, 0) || 0);
     const finalBalance = totalSalesAmount - totalPaidAmount;
 
-    const handlePrint = () => {
-        window.print();
-    };
+
 
 
 
     return (
         <div className="p-4 md:p-8 space-y-8 bg-background min-h-screen">
-            {/* Print Header - Visible ONLY in Print */}
-            <div className="hidden print:block mb-8 text-black">
-                <div className="text-center border-b-2 border-black pb-4 mb-4">
-                    <h1 className="text-3xl font-bold mb-2">विठुमाऊली वीट उत्पादक केंद्र</h1>
-                    <p className="text-sm">मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
-                    <p className="text-sm font-bold mt-1">मो. 9921915464 | 9075966464</p>
-                </div>
-                <div className="flex justify-between items-end border-b border-gray-400 pb-4 mb-6">
-                    <div>
-                        <p className="text-sm text-gray-600">ग्राहक तपशील (Customer Details):</p>
-                        <h2 className="text-xl font-bold">{customer.name}</h2>
-                        <p>{customer.mobile}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-sm text-gray-600">दिनांक (Date):</p>
-                        <p className="font-bold">{format(new Date(), 'dd/MM/yyyy')}</p>
-                    </div>
-                </div>
-            </div>
 
             {/* Header & Actions */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <Button variant="ghost" onClick={() => navigate(-1)} className="pl-0 hover:pl-2 transition-all">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     {t('backToAdmin')}
@@ -336,10 +374,7 @@ export const CustomerDetails = () => {
                         {t('paid')}
                     </Button>
 
-                    <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
-                        <Printer className="w-4 h-4 mr-2" />
-                        {t('printList') || 'Print List'}
-                    </Button>
+
                     <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsProStatementOpen(true)}>
                         <Share2 className="w-4 h-4 mr-2" />
                         {isMarathi ? 'PDF / पावती' : 'PDF / Invoice'}
@@ -455,11 +490,14 @@ export const CustomerDetails = () => {
 
             {/* Professional Statement Dialog */}
             <Dialog open={isProStatementOpen} onOpenChange={setIsProStatementOpen}>
-                <DialogContent className="max-w-[220mm] bg-gray-100 p-0 overflow-y-auto max-h-[90vh]">
-                    <div className="sticky top-0 z-10 bg-white border-b p-4 flex justify-end gap-2 shadow-sm">
+                <DialogContent className="max-w-[95vw] md:max-w-[220mm] w-full bg-gray-100 p-0 overflow-auto max-h-[90vh]">
+                    <div className="sticky top-0 z-10 bg-white border-b p-4 flex justify-end gap-2 shadow-sm print:hidden">
                         <Button variant="outline" onClick={() => setIsProStatementOpen(false)}>Close</Button>
-                        <Button variant="outline" onClick={() => document.getElementById('pro-statement-print-btn')?.click()}>
-                            <Printer className="w-4 h-4 mr-2" /> Print
+                        <Button variant="outline" disabled={isConverting} onClick={() => {
+                            const el = document.getElementById('pro-statement-template');
+                            if (el) handleDownloadImage(el as HTMLDivElement);
+                        }}>
+                            <Download className="w-4 h-4 mr-2" /> Download
                         </Button>
                         <Button className="bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isConverting} onClick={() => {
                             const el = document.getElementById('pro-statement-template');
@@ -480,8 +518,8 @@ export const CustomerDetails = () => {
                             window.print();
                         }}></button>
                     </div>
-                    <div className="p-4 flex justify-center">
-                        <div id="pro-statement-template">
+                    <div className="p-4 print:p-0 flex justify-center">
+                        <div id="pro-statement-template" className="print:w-full">
                             <StatementTemplate
                                 customerName={customer.name}
                                 customerMobile={customer.mobile}

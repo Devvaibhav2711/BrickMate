@@ -35,23 +35,23 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
     };
 
     return (
-        <div ref={ref} className="w-[210mm] min-h-[297mm] bg-white text-black p-0 mx-auto relative font-sans box-border" style={{ padding: '0' }}>
+        <div ref={ref} className="w-full max-w-[210mm] print:w-full min-h-[297mm] bg-white text-black p-0 mx-auto relative font-sans box-border border-2 border-slate-900" style={{ padding: '0' }}>
             {/* Header Section */}
-            <div className="flex justify-between items-start p-8 pb-4 relative">
+            <div className="flex justify-between items-start p-2 md:p-8 print:p-8 pb-4 relative">
                 {/* Orange/Blue Decorative Top Bar is managed via borders/bg or absolute div */}
-                <div className="absolute top-0 left-0 w-full h-4 bg-slate-800"></div>
-                <div className="absolute top-4 left-0 w-2/3 h-4 bg-orange-500 rounded-br-3xl"></div>
+                <div className="absolute top-0 left-0 w-full h-4 bg-slate-800" style={{ backgroundColor: '#1e293b', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}></div>
+                <div className="absolute top-4 left-0 w-2/3 h-4 bg-orange-500 rounded-br-3xl" style={{ backgroundColor: '#f97316', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}></div>
 
                 <div className="mt-8 w-full">
                     <div className="flex justify-between items-center">
                         {/* Logo / Company Name */}
                         <div>
-                            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">विठुमाऊली</h1>
-                            <h2 className="text-2xl font-bold text-slate-700">वीट उत्पादक केंद्र</h2>
+                            <h1 className="text-2xl md:text-4xl print:text-4xl font-extrabold text-slate-900 tracking-tight">विठुमाऊली</h1>
+                            <h2 className="text-lg md:text-2xl print:text-2xl font-bold text-slate-700">वीट उत्पादक केंद्र</h2>
                         </div>
 
                         {/* Address */}
-                        <div className="text-right text-sm text-gray-600">
+                        <div className="text-right text-xs md:text-sm print:text-sm text-gray-600">
                             <p>मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
                             <p className="font-bold mt-1">मो. 9921915464 | 9075966464</p>
                             <p>Email: example@email.com</p>
@@ -60,7 +60,7 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
 
                     {/* Invoice Label */}
                     <div className="flex justify-center mt-6">
-                        <div className="bg-orange-500 text-white px-12 py-2 rounded-full font-bold text-lg shadow-sm">
+                        <div className="bg-orange-500 text-white px-8 md:px-12 print:px-12 py-1 md:py-2 print:py-2 rounded-full font-bold text-sm md:text-lg print:text-lg shadow-sm" style={{ backgroundColor: '#f97316', color: 'white', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
                             पावती / स्टेटमेंट
                         </div>
                     </div>
@@ -68,48 +68,48 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
             </div>
 
             {/* Meta Data & Customer */}
-            <div className="px-8 py-2">
+            <div className="px-2 md:px-8 print:px-8 py-2">
                 <div className="flex justify-between items-end mb-4">
                     <div>
-                        <div className="flex items-end gap-2 mb-2">
-                            <span className="font-bold text-slate-800 min-w-[60px]">पावती क्र.:</span>
-                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[100px]">{receiptNo || 'Total-LGR'}</span>
+                        <div className="flex items-end gap-2 mb-2 text-xs md:text-base print:text-base">
+                            <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">पावती क्र.:</span>
+                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[80px] md:min-w-[100px] print:min-w-[100px]">{receiptNo || 'Total-LGR'}</span>
                         </div>
                     </div>
                     <div>
-                        <div className="flex items-end gap-2 mb-2">
+                        <div className="flex items-end gap-2 mb-2 text-xs md:text-base print:text-base">
                             <span className="font-bold text-slate-800">दिनांक:</span>
-                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[120px]">{format(new Date(), 'dd/MM/yyyy')}</span>
+                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[90px] md:min-w-[120px] print:min-w-[120px]">{format(new Date(), 'dd/MM/yyyy')}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 text-xs md:text-base print:text-base">
                     <div className="flex items-end gap-2">
-                        <span className="font-bold text-slate-800 min-w-[60px]">नाव:</span>
-                        <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow text-lg">{customerName}</span>
+                        <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">नाव:</span>
+                        <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow text-sm md:text-lg print:text-lg">{customerName}</span>
                     </div>
                     <div className="flex items-end gap-2">
-                        <span className="font-bold text-slate-800 min-w-[60px]">पत्ता:</span>
+                        <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">पत्ता:</span>
                         <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow">{customerAddress || 'Please update address'}</span>
                     </div>
                     <div className="flex items-end gap-2">
-                        <span className="font-bold text-slate-800 min-w-[60px]">मोबाईल:</span>
+                        <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">मोबाईल:</span>
                         <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow">{customerMobile}</span>
                     </div>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="px-8 mt-6">
+            <div className="px-2 md:px-8 print:px-8 mt-6">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className="bg-slate-800 text-white">
-                            <th className="py-3 px-2 border-r border-slate-600 w-[60px] text-center">अ.क्र.</th>
-                            <th className="py-3 px-2 border-r border-slate-600 text-left">तपशील (Description)</th>
-                            <th className="py-3 px-2 border-r border-slate-600 w-[80px] text-center">नग</th>
-                            <th className="py-3 px-2 border-r border-slate-600 w-[100px] text-right">दर</th>
-                            <th className="py-3 px-2 w-[120px] text-right">रक्कम</th>
+                        <tr className="bg-slate-800 text-white text-xs md:text-base print:text-base" style={{ backgroundColor: '#1e293b', color: 'white', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[30px] md:w-[60px] print:w-[60px] text-center">अ.क्र.</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 text-left">तपशील (Description)</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[40px] md:w-[80px] print:w-[80px] text-center">नग</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[50px] md:w-[100px] print:w-[100px] text-right">दर</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 w-[70px] md:w-[120px] print:w-[120px] text-right">रक्कम</th>
                         </tr>
                     </thead>
                     <tbody className="text-sm">
@@ -133,17 +133,17 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
             </div>
 
             {/* Use Flex-grow or Spacer to push footer down could be complex in A4, usually fixed positioning or margin-top auto works */}
-            <div className="px-8 mt-8">
+            <div className="px-2 md:px-8 print:px-8 mt-8">
                 <div className="flex justify-between items-start">
                     <div className="w-1/2 pr-4">
-                        <div className="mb-2 font-bold text-slate-800">अक्षरी (In Words):</div>
-                        <div className="text-sm text-gray-600 italic border-b border-gray-300 pb-1">
+                        <div className="mb-2 font-bold text-slate-800 text-xs md:text-base print:text-base">अक्षरी (In Words):</div>
+                        <div className="text-xs md:text-sm print:text-sm text-gray-600 italic border-b border-gray-300 pb-1">
                             {/* Placeholder for now */}
                             {formatCurrency(balanceDue)} only.
                         </div>
                     </div>
                     <div className="w-1/2 pl-4">
-                        <div className="border border-slate-800 rounded-sm overflow-hidden">
+                        <div className="border border-slate-800 rounded-sm overflow-hidden text-xs md:text-base print:text-base">
                             <div className="flex justify-between border-b border-slate-300 p-2">
                                 <span className="font-semibold">एकूण रक्कम (Total):</span>
                                 <span className="font-bold">{formatCurrency(totalAmount)}</span>
@@ -163,13 +163,13 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
 
             {/* Footer Signatures */}
             <div className="absolute bottom-0 left-0 w-full">
-                <div className="px-12 pb-12 flex justify-between items-end">
+                <div className="px-4 md:px-12 print:px-12 pb-12 flex justify-between items-end text-xs md:text-base print:text-base">
                     <div className="text-center">
-                        <div className="border-t-2 border-dashed border-gray-400 w-40 mb-2"></div>
+                        <div className="border-t-2 border-dashed border-gray-400 w-24 md:w-40 print:w-40 mb-2"></div>
                         <span className="font-bold text-slate-700">स्वीकारणारा (Receiver)</span>
                     </div>
                     <div className="text-center">
-                        <div className="border-t-2 border-dashed border-gray-400 w-40 mb-2"></div>
+                        <div className="border-t-2 border-dashed border-gray-400 w-24 md:w-40 print:w-40 mb-2"></div>
                         <span className="font-bold text-slate-700">अधिकृत स्वाक्षरी (Authorized)</span>
                     </div>
                 </div>
