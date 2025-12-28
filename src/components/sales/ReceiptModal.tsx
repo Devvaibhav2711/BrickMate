@@ -140,8 +140,9 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         await navigator.share({
                             files: [file],
                             title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt',
-                            // text is removed to prioritize image sharing on Android/WhatsApp
+                            text: `${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`
                         });
+                        toast.success(isMarathi ? "शेअर केले!" : "Shared successfully!");
                     } catch (shareError) {
                         if ((shareError as Error).name !== 'AbortError') {
                             console.error('Share failed:', shareError);
