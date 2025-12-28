@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Wallet } from 'lucide-react';
 import { FormattedNumberInput } from '@/components/shared/FormattedNumberInput';
 
@@ -22,6 +23,7 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
     const { t } = useLanguage();
     const addPayment = useAddCustomerPayment();
 
+    const [paymentMode, setPaymentMode] = useState<string>('प्राप्त झाले');
     const [paymentForm, setPaymentForm] = useState<{
         amount: string | number;
         date: string;
@@ -29,7 +31,7 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
     }>({
         amount: '',
         date: format(new Date(), 'yyyy-MM-dd'),
-        notes: ''
+        notes: 'प्राप्त झाले'
     });
 
     // Reset form when opened for a new customer
@@ -38,16 +40,34 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
             setPaymentForm({
                 amount: '',
                 date: format(new Date(), 'yyyy-MM-dd'),
-                notes: ''
+                notes: 'प्राप्त झाले' // Default note
             });
+            setPaymentMode('प्राप्त झाले');
         }
     }, [isOpen, customerId]);
+
+    // Update notes when mode changes
+    useEffect(() => {
+        if (isOpen) {
+            if (paymentMode !== 'other') {
+                setPaymentForm(prev => ({ ...prev, notes: paymentMode }));
+            } else {
+                // When switching to 'other', clear notes so user can type
+                // But only if the notes were previously one of the presets to avoid clearing user text if they mis-click
+                // For simplicity, let's just clear it if it equals one of the other options
+                const presets = ['प्राप्त झाले', 'पैसे प्राप्त झाले', 'रोख रक्कम प्राप्त', 'फोन पे द्वारे प्राप्त', 'गुगल पे द्वारे प्राप्त'];
+                if (presets.includes(paymentForm.notes)) {
+                    setPaymentForm(prev => ({ ...prev, notes: '' }));
+                }
+            }
+        }
+    }, [paymentMode, isOpen]);
+
 
     const handleAddPayment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!customerId || !paymentForm.amount || !paymentForm.date || !paymentForm.notes) {
-            // Assuming we want to show a toast if validation fails despite HTML5 checks
-            return; // Or show toast
+            return;
         }
 
         try {
@@ -108,15 +128,31 @@ export const AddPaymentSheet = ({ isOpen, onClose, customerId, customerName }: A
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="paymentNotes">{t('notes')}</Label>
-                            <Textarea
-                                id="paymentNotes"
-                                value={paymentForm.notes}
-                                onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
-                                placeholder={t('notes')}
-                                className="bg-muted/30 resize-none"
-                                rows={3}
-                            />
+                            <Label>{t('notes')}</Label>
+                            <Select value={paymentMode} onValueChange={setPaymentMode}>
+                                <SelectTrigger className="bg-muted/30">
+                                    <SelectValue placeholder="Select note type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="प्राप्त झाले">प्राप्त झाले (Received)</SelectItem>
+                                    <SelectItem value="पैसे प्राप्त झाले">पैसे प्राप्त झाले (Money Received)</SelectItem>
+                                    <SelectItem value="रोख रक्कम प्राप्त">रोख रक्कम प्राप्त (Cash)</SelectItem>
+                                    <SelectItem value="फोन पे द्वारे प्राप्त">फोन पे (PhonePe)</SelectItem>
+                                    <SelectItem value="गुगल पे द्वारे प्राप्त">गुगल पे (GooglePay)</SelectItem>
+                                    <SelectItem value="other">इतर (Other)</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {paymentMode === 'other' && (
+                                <Textarea
+                                    id="paymentNotes"
+                                    value={paymentForm.notes}
+                                    onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                                    placeholder="इतर माहिती लिहा..."
+                                    className="bg-muted/30 resize-none mt-2"
+                                    rows={2}
+                                />
+                            )}
                         </div>
                     </form>
                 </div>

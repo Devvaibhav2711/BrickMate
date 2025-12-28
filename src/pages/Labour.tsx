@@ -5,11 +5,14 @@ import { Users, Phone, Wallet } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLabour } from '@/hooks/useLabour';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
 import { FloatingActionButton } from '@/components/shared/FloatingActionButton';
 import { cn, formatCurrency } from '@/lib/utils';
 import { AddLabourDialog } from '@/components/labour/AddLabourDialog';
+import { AddBaajarDialog } from '@/components/labour/AddBaajarDialog';
+import { ShoppingBag } from 'lucide-react';
 
 const workTypeColors = {
   moulding: 'bg-primary/10 text-primary',
@@ -24,6 +27,7 @@ export const Labour = () => {
   const { data: labourList, isLoading } = useLabour();
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isBaajarOpen, setIsBaajarOpen] = useState(false);
 
 
 
@@ -55,10 +59,16 @@ export const Labour = () => {
   return (
     <div className="p-4 space-y-4 pb-20">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground">{t('labour')}</h2>
-        <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
-          {labourList?.length || 0} {t('activeWorkers').toLowerCase()}
-        </span>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold text-foreground">{t('labour')}</h2>
+          <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
+            {labourList?.length || 0} {t('activeWorkers').toLowerCase()}
+          </span>
+        </div>
+        <Button variant="secondary" size="sm" onClick={() => setIsBaajarOpen(true)}>
+          <ShoppingBag className="w-4 h-4 mr-2" />
+          {t('baajar')}
+        </Button>
       </div>
 
       {/* Total Outstanding Card */}
@@ -133,6 +143,7 @@ export const Labour = () => {
       />
 
       <AddLabourDialog open={isSheetOpen} onOpenChange={setIsSheetOpen} />
+      <AddBaajarDialog open={isBaajarOpen} onOpenChange={setIsBaajarOpen} />
     </div >
   );
 };

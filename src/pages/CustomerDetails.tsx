@@ -277,7 +277,7 @@ export const CustomerDetails = () => {
                     </Button>
                     <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsProStatementOpen(true)}>
                         <Share2 className="w-4 h-4 mr-2" />
-                        {isMarathi ? 'स्टेटमेंट (PDF/इमेज)' : 'Statement (PDF/Image)'}
+                        {isMarathi ? 'PDF / पावती' : 'PDF / Invoice'}
                     </Button>
                 </div>
             </div>

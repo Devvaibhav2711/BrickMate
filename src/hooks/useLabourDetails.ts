@@ -130,6 +130,7 @@ export const useLabourDetails = (labourId: string | undefined) => {
             return {
                 labour: labour as Labour,
                 transactions,
+                production, // Exposed raw production data
                 stats: {
                     totalGiven,
                     totalEarned,

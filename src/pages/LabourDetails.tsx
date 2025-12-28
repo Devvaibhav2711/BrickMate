@@ -31,6 +31,13 @@ import {
     DialogDescription,
     DialogFooter
 } from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -42,11 +49,14 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
+import { DateRangeFilter, DateRange } from '@/components/shared/DateRangeFilter';
+import { format } from 'date-fns';
+
 export const LabourDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t } = useLanguage();
-    const { data, isLoading } = useLabourDetails(id);
+    const { data, isLoading, refetch } = useLabourDetails(id);
     const addAdvance = useAddAdvance();
     const addPayment = useAddWagePayment();
     const updateLabour = useUpdateLabour();
@@ -54,30 +64,48 @@ export const LabourDetails = () => {
     const [isAdvanceOpen, setIsAdvanceOpen] = useState(false);
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
     const [amount, setAmount] = useState('');
+    const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+
+
+    const [reasonType, setReasonType] = useState('giveAdvance');
     const [notes, setNotes] = useState('');
+    const [advanceDate, setAdvanceDate] = useState(new Date().toISOString().split('T')[0]);
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
     const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
     if (isLoading || !data) return <PageLoader />;
 
     const { labour, transactions, stats } = data;
+
+    const filteredTransactions = transactions.filter(tx => {
+        if (!dateRange.from) return true;
+        const txDate = new Date(tx.date);
+        if (dateRange.to) {
+            return txDate >= dateRange.from && txDate <= dateRange.to;
+        }
+        return txDate >= dateRange.from;
+    });
+
     const isActive = labour.is_active !== false;
 
     const handleAddAdvance = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!id || !amount || !notes) {
+        if (!id || !amount || (reasonType === 'Other' && !notes)) {
             toast.error(t('error') + ": All fields are required");
             return;
         }
         await addAdvance.mutateAsync({
             labour_id: id,
             amount: Number(amount),
-            notes,
-            date: new Date().toISOString()
+            notes: reasonType === 'Other' ? notes : (reasonType === 'giveAdvance' ? t('advanceGiven') : t(reasonType as any)),
+            date: advanceDate,
+            worker_name: labour.name
         });
         setAmount('');
+        setReasonType('giveAdvance');
         setNotes('');
         setIsAdvanceOpen(false);
+        refetch();
     };
 
     const handleAddPayment = async (e: React.FormEvent) => {
@@ -95,6 +123,7 @@ export const LabourDetails = () => {
         setAmount('');
         setNotes('');
         setIsPaymentOpen(false);
+        refetch();
     };
 
     const handleToggleArchive = async () => {
@@ -238,13 +267,32 @@ export const LabourDetails = () => {
                                 <div className="flex-1 overflow-y-auto px-6 py-4">
                                     <form id="advance-form" onSubmit={handleAddAdvance} className="space-y-4">
                                         <div className="space-y-2">
+                                            <Label>{t('date')}</Label>
+                                            <Input type="date" value={advanceDate} onChange={e => setAdvanceDate(e.target.value)} required />
+                                        </div>
+                                        <div className="space-y-2">
                                             <Label>{t('amount')} (₹)</Label>
                                             <FormattedNumberInput required value={amount} onChange={(val) => setAmount(val.toString())} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>{t('notes')}</Label>
-                                            <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
+                                            <Label>{t('reason')}</Label>
+                                            <Select value={reasonType} onValueChange={setReasonType}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('reason')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="giveAdvance">{t('giveAdvance')}</SelectItem>
+                                                    <SelectItem value="medical">{t('medical')}</SelectItem>
+                                                    <SelectItem value="Other">{t('other')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
+                                        {reasonType === 'Other' && (
+                                            <div className="space-y-2">
+                                                <Label>{t('notes')}</Label>
+                                                <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('notes')} />
+                                            </div>
+                                        )}
                                     </form>
                                 </div>
                                 <DialogFooter className="px-6 py-4 border-t bg-background sticky bottom-0 z-20">
@@ -289,12 +337,58 @@ export const LabourDetails = () => {
                 </div>
             </div>
 
-            {/* Transaction History */}
+            {/* Production History */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <History className="w-5 h-5" />
-                    {t('transactionHistory')}
+                    <TrendingUp className="w-5 h-5" />
+                    {t('productionHistory')}
                 </h3>
+                <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-muted/50 border-b">
+                                <tr>
+                                    <th className="h-12 px-4 text-left font-medium text-muted-foreground">{t('date')}</th>
+                                    <th className="h-12 px-4 text-right font-medium text-muted-foreground">{t('quantity')}</th>
+                                    <th className="h-12 px-4 text-right font-medium text-muted-foreground">{t('rate')}</th>
+                                    <th className="h-12 px-4 text-right font-medium text-muted-foreground">{t('total')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.production?.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="p-4 text-center text-muted-foreground">{t('noData')}</td>
+                                    </tr>
+                                ) : (
+                                    data.production?.map((prod: any) => (
+                                        <tr key={prod.id} className="border-b transition-colors hover:bg-muted/50">
+                                            <td className="p-4 whitespace-nowrap">
+                                                {new Date(prod.date).toLocaleDateString()}
+                                                {prod.notes && <div className="text-xs text-muted-foreground">{prod.notes}</div>}
+                                            </td>
+                                            <td className="p-4 text-right font-medium">{prod.quantity}</td>
+                                            <td className="p-4 text-right text-muted-foreground">₹{prod.rate_per_brick}</td>
+                                            <td className="p-4 text-right font-bold text-green-600">
+                                                {formatCurrency((prod.quantity || 0) * (prod.rate_per_brick || 0))}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {/* Transaction History */}
+            <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <History className="w-5 h-5" />
+                        {t('transactionHistory')}
+                    </h3>
+                    <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
+                </div>
                 <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -307,25 +401,27 @@ export const LabourDetails = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {transactions.length === 0 ? (
+                                {filteredTransactions.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="p-4 text-center text-muted-foreground">{t('noTransactions')}</td>
                                     </tr>
                                 ) : (
-                                    transactions.map((t) => (
-                                        <tr key={t.id} className="border-b transition-colors hover:bg-muted/50">
+                                    filteredTransactions.map((tx) => (
+                                        <tr key={tx.id} className="border-b transition-colors hover:bg-muted/50">
                                             <td className="p-4 whitespace-nowrap">
-                                                {new Date(t.date).toLocaleDateString()}
+                                                {format(new Date(tx.date), 'dd MMMM yyyy')}
                                             </td>
                                             <td className="p-4 font-medium">
-                                                {t.description}
-                                                <div className="text-xs text-muted-foreground capitalize">{t.type}</div>
+                                                {(tx.description === 'Uchal Dya' || tx.description === 'Give Advance' || tx.description === 'Advance Payment' || tx.description === t('giveAdvance'))
+                                                    ? t('advanceGiven')
+                                                    : tx.description
+                                                }
                                             </td>
                                             <td className="p-4 text-right text-red-600 font-medium whitespace-nowrap">
-                                                {t.isDebit ? formatCurrency(t.amount) : '-'}
+                                                {tx.isDebit ? formatCurrency(tx.amount) : '-'}
                                             </td>
                                             <td className="p-4 text-right text-green-600 font-medium whitespace-nowrap">
-                                                {!t.isDebit ? formatCurrency(t.amount) : '-'}
+                                                {!tx.isDebit ? formatCurrency(tx.amount) : '-'}
                                             </td>
                                         </tr>
                                     ))

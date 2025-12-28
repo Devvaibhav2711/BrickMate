@@ -44,10 +44,13 @@ const categoryColors = {
   other: 'bg-muted text-muted-foreground',
 };
 
+import { DateRangeFilter, DateRange } from '@/components/shared/DateRangeFilter';
+
 export const Expenses = () => {
   const { t } = useLanguage();
   const { data: expenses, isLoading } = useExpenses();
   const addExpense = useAddExpense();
+  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [formData, setFormData] = useState<ExpenseInsert>({
@@ -84,9 +87,21 @@ export const Expenses = () => {
     setIsSheetOpen(false);
   };
 
+  const filteredExpenses = expenses?.filter(expense => {
+    if (!dateRange.from) return true;
+    const expenseDate = new Date(expense.date);
+    if (dateRange.to) {
+      return expenseDate >= dateRange.from && expenseDate <= dateRange.to;
+    }
+    // If only from date is set (e.g. single day selection logic if we add that later), 
+    // or typically ranged filters set both. 
+    // For our preset 'today'/'yesterday', both from and to are set.
+    // If we only have 'from', we can treat it as 'from this date onwards' or 'exact date'.
+    // Given the component logic, presets set both.
+    return expenseDate >= dateRange.from;
+  }) || [];
 
-
-  const totalExpenses = expenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
+  const totalExpenses = filteredExpenses?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
 
   if (isLoading) {
     return <PageLoader />;
@@ -113,11 +128,12 @@ export const Expenses = () => {
         </div>
       </motion.div>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
         <h2 className="text-xl font-bold text-foreground">{t('expenses')}</h2>
+        <DateRangeFilter dateRange={dateRange} setDateRange={setDateRange} />
       </div>
 
-      {!expenses?.length ? (
+      {!filteredExpenses?.length ? (
         <EmptyState
           icon={<Wallet className="w-8 h-8 text-muted-foreground" />}
           title={t('noData')}
@@ -128,7 +144,7 @@ export const Expenses = () => {
       ) : (
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
-            {expenses.map((expense, index) => {
+            {filteredExpenses.map((expense, index) => {
               const Icon = categoryIcons[expense.category];
               return (
                 <motion.div

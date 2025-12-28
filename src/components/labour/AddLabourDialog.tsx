@@ -39,7 +39,7 @@ export const AddLabourDialog = ({ open, onOpenChange, labourToEdit }: AddLabourD
     const [formData, setFormData] = useState<LabourInsert>({
         name: '',
         mobile: '',
-        work_type: 'general',
+        work_type: 'aalekari',
         daily_wage: 0,
         adhar_no: '',
         family_members: '',
@@ -164,10 +164,11 @@ export const AddLabourDialog = ({ open, onOpenChange, labourToEdit }: AddLabourD
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="moulding">{t('moulding')}</SelectItem>
-                                        <SelectItem value="stacking">{t('stacking')}</SelectItem>
-                                        <SelectItem value="loading">{t('loading')}</SelectItem>
-                                        <SelectItem value="general">{t('general')}</SelectItem>
+                                        <SelectItem value="aalekari">{t('aalekari')}</SelectItem>
+                                        <SelectItem value="varkam">{t('varkam')}</SelectItem>
+                                        <SelectItem value="driver">{t('driver')}</SelectItem>
+                                        <SelectItem value="bhatkar">{t('bhatkar')}</SelectItem>
+                                        <SelectItem value="wageWork">{t('wageWork')}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

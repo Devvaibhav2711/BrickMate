@@ -57,10 +57,13 @@ export const Production = () => {
     }
     if (formData.quantity <= 0) return;
 
+    const selectedWorker = labourList?.find(l => l.id === formData.labour_id);
+
     await addProduction.mutateAsync({
       ...formData,
       quantity: Number(formData.quantity),
-      rate_per_brick: Number(formData.rate_per_brick)
+      rate_per_brick: Number(formData.rate_per_brick),
+      worker_name: selectedWorker?.name
     } as any);
 
     setFormData({

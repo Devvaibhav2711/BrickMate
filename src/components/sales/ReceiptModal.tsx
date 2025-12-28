@@ -195,16 +195,16 @@ ${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`
                         {/* Customer & Meta Grid */}
                         <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
                             <div className="space-y-1">
-                                <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider">{isMarathi ? 'ग्राहक' : 'BILLED TO'}</div>
+                                <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider">ग्राहक (Billed To)</div>
                                 <div className="font-bold text-lg text-black leading-tight capitalize">
-                                    {customerName || (isMarathi ? 'रोखी' : 'Cash')}
+                                    {customerName || 'रोखी (Cash)'}
                                 </div>
                                 {customerMobile && <div className="text-gray-600 font-mono text-xs">{customerMobile}</div>}
                             </div>
                             <div className="text-right space-y-1">
-                                <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider">{isMarathi ? 'पावती क्र.' : 'RECEIPT NO.'}</div>
+                                <div className="text-xs text-gray-500 uppercase font-semibold tracking-wider">पावती क्र. (Receipt No)</div>
                                 <div className="font-bold text-black font-mono">#{displayReceiptNo}</div>
-                                <div className="text-xs text-gray-500 mt-1">{isMarathi ? 'दिनांक' : 'DATE'}</div>
+                                <div className="text-xs text-gray-500 mt-1">दिनांक (Date)</div>
                                 <div className="font-medium">{format(new Date(sale.date), 'dd/MM/yyyy')}</div>
                             </div>
                         </div>
@@ -254,8 +254,8 @@ ${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`
                         {/* Footer / Signature */}
                         <div className="mt-8 pt-2 flex justify-between items-end">
                             <div className="text-[10px] text-gray-400 leading-tight">
-                                This is a computer generated receipt.<br />
-                                Subject to Shirur Jurisdiction.
+                                ही संगणकीकृत पावती आहे.<br />
+                                शिरूर न्यायक्षेत्राच्या अधीन.
                             </div>
                             <div className="text-center">
                                 {/* <img src="/signature.png" className="h-8 mx-auto opacity-80" /> */}

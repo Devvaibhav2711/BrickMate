@@ -6,7 +6,7 @@ export interface Labour {
   id: string;
   name: string;
   mobile: string | null;
-  work_type: 'moulding' | 'stacking' | 'loading' | 'general';
+  work_type: 'aalekari' | 'varkam' | 'driver' | 'bhatkar' | 'wageWork' | 'moulding' | 'stacking' | 'loading' | 'general';
   daily_wage: number;
   created_at: string;
   updated_at: string;
@@ -22,7 +22,7 @@ export interface Labour {
 export interface LabourInsert {
   name: string;
   mobile?: string;
-  work_type: 'moulding' | 'stacking' | 'loading' | 'general';
+  work_type: 'aalekari' | 'varkam' | 'driver' | 'bhatkar' | 'wageWork' | 'moulding' | 'stacking' | 'loading' | 'general';
   daily_wage: number;
   adhar_no?: string;
   family_members?: string;
@@ -34,6 +34,7 @@ export interface LabourInsert {
 }
 
 import { useYearContext } from '@/contexts/YearContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const useLabour = () => {
   const { startDate, endDate, isAllTime } = useYearContext();
@@ -89,7 +90,7 @@ export const useAddLabour = () => {
     mutationFn: async (labour: LabourInsert) => {
       const { data, error } = await supabase
         .from('labour')
-        .insert([labour])
+        .insert([labour] as any)
         .select()
         .single();
 
@@ -113,7 +114,7 @@ export const useUpdateLabour = () => {
     mutationFn: async ({ id, ...updates }: Partial<Labour> & { id: string }) => {
       const { data, error } = await supabase
         .from('labour')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
@@ -151,9 +152,11 @@ export const useDeleteLabour = () => {
 
 export const useAddAdvance = () => {
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   return useMutation({
-    mutationFn: async ({ labour_id, amount, notes, date }: { labour_id: string; amount: number; notes: string; date: string }) => {
+    mutationFn: async ({ labour_id, amount, notes, date, worker_name }: { labour_id: string; amount: number; notes: string; date: string, worker_name?: string }) => {
+      // 1. Add Advance Payment
       const { data, error } = await supabase
         .from('advance_payments')
         .insert([{ labour_id, amount, notes, date }])
@@ -161,12 +164,33 @@ export const useAddAdvance = () => {
         .single();
 
       if (error) throw error;
+
+      // 2. Add as Expense (Auto-entry)
+      try {
+        const description = `${t('advanceGivenTo')} ${worker_name || 'Worker'}. ${notes}`;
+        const { error: expenseError } = await supabase
+          .from('expenses')
+          .insert([{
+            category: 'labour',
+            amount,
+            date: date,
+            description
+          }]);
+
+        if (expenseError) throw expenseError;
+      } catch (err: any) {
+        console.error("Failed to record expense:", err);
+        toast.warning("Advance saved, but failed to record as Expense.");
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['labour'] });
       queryClient.invalidateQueries({ queryKey: ['labour', variables.labour_id] });
-      toast.success('Advance added successfully');
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      toast.success('Advance added and recorded as Expense');
     },
     onError: (error) => {
       toast.error('Failed to add advance: ' + error.message);
@@ -176,6 +200,7 @@ export const useAddAdvance = () => {
 
 export const useAddWagePayment = () => {
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: async ({ labour_id, amount, notes, payment_date, period_start, period_end, worker_name }: { labour_id: string; amount: number; notes: string; payment_date: string; period_start?: string; period_end?: string, worker_name?: string }) => {
@@ -197,7 +222,7 @@ export const useAddWagePayment = () => {
 
       // 2. Add as Expense (Auto-entry)
       try {
-        const description = `Wage Payment to ${worker_name || 'Worker'}. ${notes}`;
+        const description = `${t('wagePaymentTo')} ${worker_name || 'Worker'}. ${notes}`;
         const { error: expenseError } = await supabase
           .from('expenses')
           .insert([{
