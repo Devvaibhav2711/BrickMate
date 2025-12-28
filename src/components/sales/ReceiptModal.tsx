@@ -13,7 +13,7 @@ import { Sale } from '@/hooks/useSales';
 import { useLanguage } from '@/contexts/LanguageContext';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
-import { jsPDF } from 'jspdf';
+
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -116,65 +116,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
         setIsDownloading(false);
     };
 
-    const handleSharePdf = async () => {
-        if (!receiptRef.current) return;
-        setIsDownloading(true);
 
-        try {
-            const canvas = await html2canvas(receiptRef.current, {
-                scale: 2, // Better quality
-                useCORS: true,
-                logging: false,
-                windowWidth: 380, // Force mobile width for layout consistency
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            // First page
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-
-            // Add extra pages if needed
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight; // Negative position to show bottom part
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
-            }
-
-            const fileName = `Statement_${customerName || 'Customer'}_${format(new Date(), 'dd-MM-yyyy')}.pdf`;
-
-            // Try Web Share API with File
-            const pdfBlob = pdf.output('blob');
-            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Statement',
-                    text: `Statement for ${customerName}`,
-                });
-            } else {
-                // Fallback to download
-                pdf.save(fileName);
-                toast.success(t('success') + ': PDF Downloaded');
-            }
-
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            toast.error(t('error') + ': Failed to generate PDF');
-        } finally {
-            setIsDownloading(false);
-        }
-    };
 
     const handleWhatsApp = async () => {
         if (!receiptRef.current) return;
@@ -228,7 +170,7 @@ ${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`
                     {/* Receipt Container for Capture */}
                     <div
                         ref={receiptRef}
-                        className="bg-white p-6 shadow-xl border border-gray-200 w-full max-w-[380px] font-sans relative"
+                        className="bg-white p-4 sm:p-6 shadow-xl border border-gray-200 w-full max-w-[380px] font-sans relative mx-auto"
                         style={{ aspectRatio: 'auto' }}
                     >
                         {/* Header Image */}
@@ -338,14 +280,6 @@ ${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`
                 <DialogFooter className="p-4 border-t bg-white flex-col gap-2 sm:flex-row">
                     {shouldUseLedger ? (
                         <div className="flex w-full gap-2">
-                            <Button onClick={handleSharePdf} className="flex-1 bg-red-600 hover:bg-red-700 text-white" disabled={isDownloading}>
-                                {isDownloading ? t('loadingText') : (
-                                    <>
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Share History PDF
-                                    </>
-                                )}
-                            </Button>
                             <Button onClick={handleDownloadJpg} variant="outline" className="flex-1" disabled={isDownloading}>
                                 {isDownloading ? t('loadingText') : (
                                     <>

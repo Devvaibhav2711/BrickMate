@@ -9,6 +9,7 @@ interface StatCardProps {
   subValue?: string;
   variant?: 'default' | 'primary' | 'success' | 'warning';
   delay?: number;
+  onClick?: () => void;
 }
 
 const variantStyles = {
@@ -32,15 +33,18 @@ export const StatCard = ({
   subValue,
   variant = 'default',
   delay = 0,
+  onClick,
 }: StatCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
+      onClick={onClick}
       className={cn(
         'rounded-xl border p-4 shadow-sm',
-        variantStyles[variant]
+        variantStyles[variant],
+        onClick && 'cursor-pointer hover:bg-opacity-80 transition-all active:scale-95'
       )}
     >
       <div className="flex items-start gap-3">

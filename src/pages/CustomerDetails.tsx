@@ -10,14 +10,18 @@ import { format } from 'date-fns';
 import { PageLoader } from '@/components/shared/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCustomerPayments, useAddCustomerPayment } from '@/hooks/useCustomerPayments';
+import { useCustomers } from '@/hooks/useCustomers';
 import { Sale } from '@/hooks/useSales';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { formatCurrency } from '@/lib/utils';
 import { AddPaymentSheet } from '@/components/sales/AddPaymentSheet';
-import { ReceiptModal } from '@/components/sales/ReceiptModal';
+import { StatementTemplate } from '@/components/sales/StatementTemplate';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import html2canvas from 'html2canvas';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 type Transaction = {
     id: string;
@@ -27,6 +31,8 @@ type Transaction = {
     debit: number;  // Bill Amount
     credit: number; // Paid Amount
     balance: number; // Running Balance
+    quantity?: number;
+    rate?: number;
 };
 
 export const CustomerDetails = () => {
@@ -36,7 +42,48 @@ export const CustomerDetails = () => {
     const isMarathi = language === 'mr';
 
     const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
-    const [isStatementOpen, setIsStatementOpen] = useState(false);
+    const [isProStatementOpen, setIsProStatementOpen] = useState(false);
+    const [isConverting, setIsConverting] = useState(false);
+    const statementRef = useState<HTMLDivElement | null>(null);
+
+    const handleShareImage = async (templateRef: HTMLDivElement | null) => {
+        if (!templateRef) return;
+        setIsConverting(true);
+        toast.loading("Generating High Quality Image...");
+        try {
+            const canvas = await html2canvas(templateRef, {
+                scale: 2, // High resolution
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            });
+            const image = canvas.toDataURL('image/jpeg', 0.9);
+
+            // Generate Filename
+            const fileName = `Statement_${customer?.name || 'Customer'}.jpg`;
+            const file = await (await fetch(image)).blob().then(blob => new File([blob], fileName, { type: 'image/jpeg' }));
+
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Payment Statement',
+                    text: `Statement for ${customer?.name}`
+                });
+            } else {
+                // Fallback Download
+                const link = document.createElement('a');
+                link.href = image;
+                link.download = fileName;
+                link.click();
+                toast.success("Image Downloaded");
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to generate image");
+        } finally {
+            toast.dismiss();
+            setIsConverting(false);
+        }
+    };
 
 
     // Fetch Customer Profile
@@ -71,8 +118,27 @@ export const CustomerDetails = () => {
 
     // Fetch Payment History
     const { data: payments, isLoading: loadingPayments } = useCustomerPayments(id || '');
+    const { data: allCustomers, isLoading: loadingAllCustomers } = useCustomers();
 
-    const isLoading = loadingProfile || loadingSales || loadingPayments;
+    const isLoading = loadingProfile || loadingSales || loadingPayments || loadingAllCustomers;
+
+    // Calculate Receipt No (Customer Serial No)
+    // "invoice no shoul be start from 0001 when new user added then hi will get 0002"
+    // useCustomers returns DESC order (Newest first).
+    const receiptNo = useMemo(() => {
+        if (!allCustomers || !id) return '0001';
+        // useCustomers sorts by created_at DESC (Newest first).
+        // So:
+        // Index 0: Newest (Total Count)
+        // Index N: Oldest (0001)
+
+        // Serial = Total - Index of current
+        const index = allCustomers.findIndex(c => c.id === id);
+        if (index === -1) return '0001';
+
+        const serial = allCustomers.length - index;
+        return serial.toString().padStart(4, '0');
+    }, [allCustomers, id]);
 
     // Calculate Ledger
     const transactions = useMemo(() => {
@@ -111,7 +177,9 @@ export const CustomerDetails = () => {
                     id: sale.id,
                     date: item.date,
                     type: 'sale',
-                    details: `${sale.quantity} ${t('bricks')} @ ${formatCurrency(sale.rate_per_brick)}`,
+                    details: t('bricks'), // or 'Veet'
+                    quantity: sale.quantity,
+                    rate: sale.rate_per_brick,
                     debit: sale.total_amount,
                     credit: 0,
                     balance: runningBalance
@@ -171,6 +239,26 @@ export const CustomerDetails = () => {
 
     return (
         <div className="p-4 md:p-8 space-y-8 bg-background min-h-screen">
+            {/* Print Header - Visible ONLY in Print */}
+            <div className="hidden print:block mb-8 text-black">
+                <div className="text-center border-b-2 border-black pb-4 mb-4">
+                    <h1 className="text-3xl font-bold mb-2">विठुमाऊली वीट उत्पादक केंद्र</h1>
+                    <p className="text-sm">मु. पो. कोळवाडी, ता. शिरुर, जि. पुणे</p>
+                    <p className="text-sm font-bold mt-1">मो. 9921915464 | 9075966464</p>
+                </div>
+                <div className="flex justify-between items-end border-b border-gray-400 pb-4 mb-6">
+                    <div>
+                        <p className="text-sm text-gray-600">ग्राहक तपशील (Customer Details):</p>
+                        <h2 className="text-xl font-bold">{customer.name}</h2>
+                        <p>{customer.mobile}</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-sm text-gray-600">दिनांक (Date):</p>
+                        <p className="font-bold">{format(new Date(), 'dd/MM/yyyy')}</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Header & Actions */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
                 <Button variant="ghost" onClick={() => navigate(-1)} className="pl-0 hover:pl-2 transition-all">
@@ -182,13 +270,14 @@ export const CustomerDetails = () => {
                         <Wallet className="w-4 h-4 mr-2" />
                         {t('paid')}
                     </Button>
-                    <Button variant="outline" onClick={() => setIsStatementOpen(true)}>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        {isMarathi ? 'इतिहास शेअर करा (PDF)' : 'Share History (PDF)'}
-                    </Button>
+
                     <Button variant="outline" onClick={handlePrint} className="hidden md:flex">
                         <Printer className="w-4 h-4 mr-2" />
                         {t('printList') || 'Print List'}
+                    </Button>
+                    <Button className="bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setIsProStatementOpen(true)}>
+                        <Share2 className="w-4 h-4 mr-2" />
+                        {isMarathi ? 'स्टेटमेंट (PDF/इमेज)' : 'Statement (PDF/Image)'}
                     </Button>
                 </div>
             </div>
@@ -289,12 +378,59 @@ export const CustomerDetails = () => {
             </div>
 
             {/* Add Payment Sheet */}
+
             <AddPaymentSheet
                 isOpen={isPaymentSheetOpen}
                 onClose={() => setIsPaymentSheetOpen(false)}
                 customerId={id || ''}
                 customerName={customer.name}
             />
+
+
+
+            {/* Professional Statement Dialog */}
+            <Dialog open={isProStatementOpen} onOpenChange={setIsProStatementOpen}>
+                <DialogContent className="max-w-[220mm] bg-gray-100 p-0 overflow-y-auto max-h-[90vh]">
+                    <div className="sticky top-0 z-10 bg-white border-b p-4 flex justify-end gap-2 shadow-sm">
+                        <Button variant="outline" onClick={() => setIsProStatementOpen(false)}>Close</Button>
+                        <Button variant="outline" onClick={() => document.getElementById('pro-statement-print-btn')?.click()}>
+                            <Printer className="w-4 h-4 mr-2" /> Print
+                        </Button>
+                        <Button className="bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isConverting} onClick={() => {
+                            const el = document.getElementById('pro-statement-template');
+                            if (el) handleShareImage(el as HTMLDivElement);
+                        }}>
+                            <Share2 className="w-4 h-4 mr-2" /> Share WhatsApp
+                        </Button>
+                        {/* Hidden Print Button to trigger specific print */}
+                        <button id="pro-statement-print-btn" className="hidden" onClick={() => {
+                            // Print logic: we can use window.print() but we need to ensure styles target this modal content
+                            // Or simpler: Open a new window? No, CSS @media print is best.
+                            // We already have print styles. We need to hide everything else and show THIS.
+                            // The StatementTemplate is inside this dialog.
+                            // We might need to add a class to body to toggle print mode vs normal 'Print List' mode.
+                            // For now, let's just window.print() and reliance on print.css
+                            // BUT print.css currently hides everything except #receipt-container.
+                            // We need to update print.css to also support printing .pro-statement
+                            window.print();
+                        }}></button>
+                    </div>
+                    <div className="p-4 flex justify-center">
+                        <div id="pro-statement-template">
+                            <StatementTemplate
+                                customerName={customer.name}
+                                customerMobile={customer.mobile}
+                                customerAddress={customer.address}
+                                transactions={transactions}
+                                totalAmount={totalSalesAmount}
+                                paidAmount={totalPaidAmount}
+                                balanceDue={finalBalance}
+                                receiptNo={receiptNo}
+                            />
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

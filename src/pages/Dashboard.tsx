@@ -19,6 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useYearContext } from '@/contexts/YearContext';
+import { CustomerSearch } from '@/components/dashboard/CustomerSearch';
+import { PendingPaymentsDialog } from '@/components/dashboard/PendingPaymentsDialog';
+import { ActiveWorkersDialog } from '@/components/dashboard/ActiveWorkersDialog';
+import { useState } from 'react';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
@@ -34,6 +38,8 @@ const formatNumber = (num: number) => {
 
 export const Dashboard = () => {
   const { t } = useLanguage();
+  const [isPendingDialogOpen, setIsPendingDialogOpen] = useState(false);
+  const [isActiveWorkersDialogOpen, setIsActiveWorkersDialogOpen] = useState(false);
   const { selectedYear, startMonth, setYear, setStartMonth } = useYearContext();
   const currentYear = new Date().getFullYear();
 
@@ -47,34 +53,38 @@ export const Dashboard = () => {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Filters */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-        <div className="flex-1 min-w-[120px]">
-          <Select value={selectedYear} onValueChange={setYear}>
-            <SelectTrigger className="bg-background w-full">
-              <SelectValue placeholder="Year" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              {years.map(y => (
-                <SelectItem key={y} value={y}>
-                  {y}-{parseInt(y) + 1}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex-1 min-w-[120px]">
-          <Select value={startMonth} onValueChange={setStartMonth}>
-            <SelectTrigger className="bg-background w-full">
-              <SelectValue placeholder="Start Month" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="0">January</SelectItem>
-              <SelectItem value="3">April</SelectItem>
-              <SelectItem value="9">October</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-4">
+        <CustomerSearch />
+
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex-1 min-w-[120px]">
+            <Select value={selectedYear} onValueChange={setYear}>
+              <SelectTrigger className="bg-background w-full">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                {years.map(y => (
+                  <SelectItem key={y} value={y}>
+                    {y}-{parseInt(y) + 1}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[120px]">
+            <Select value={startMonth} onValueChange={setStartMonth}>
+              <SelectTrigger className="bg-background w-full">
+                <SelectValue placeholder="Start Month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">January</SelectItem>
+                <SelectItem value="3">April</SelectItem>
+                <SelectItem value="9">October</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
       {/* Hero Section */}
@@ -144,6 +154,7 @@ export const Dashboard = () => {
             label={t('activeWorkers')}
             value={stats?.activeWorkers || 0}
             delay={0.3}
+            onClick={() => setIsActiveWorkersDialogOpen(true)}
           />
           <StatCard
             icon={<Clock className="w-5 h-5" />}
@@ -151,6 +162,7 @@ export const Dashboard = () => {
             value={formatCurrency(stats?.pendingPayments || 0)}
             variant="warning"
             delay={0.35}
+            onClick={() => setIsPendingDialogOpen(true)}
           />
         </div>
       </div>
@@ -166,6 +178,9 @@ export const Dashboard = () => {
           {t('dashboard')} - {t('thisMonth')} {t('reports')}
         </p>
       </motion.div>
+
+      <PendingPaymentsDialog open={isPendingDialogOpen} onOpenChange={setIsPendingDialogOpen} />
+      <ActiveWorkersDialog open={isActiveWorkersDialogOpen} onOpenChange={setIsActiveWorkersDialogOpen} />
     </div>
   );
 };
