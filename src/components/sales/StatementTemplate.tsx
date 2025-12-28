@@ -43,11 +43,11 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                 <div className="absolute top-4 left-0 w-2/3 h-4 bg-orange-500 rounded-br-3xl" style={{ backgroundColor: '#f97316', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}></div>
 
                 <div className="mt-8 w-full">
-                    <div className="flex justify-between items-center">
-                        {/* Logo / Company Name */}
-                        <div>
-                            <h1 className="text-2xl md:text-4xl print:text-4xl font-extrabold text-slate-900 tracking-tight">माऊली</h1>
-                            <h2 className="text-lg md:text-2xl print:text-2xl font-bold text-slate-700">वीट उत्पादक केंद्र</h2>
+                    <div className="flex justify-between items-start">
+                        {/* Logo / Company Name - Left Aligned */}
+                        <div className="text-left">
+                            <h1 className="text-2xl md:text-5xl print:text-5xl font-extrabold text-slate-900 tracking-tight">माऊली</h1>
+                            <h2 className="text-lg md:text-2xl print:text-2xl font-bold text-slate-700 whitespace-nowrap">वीट उत्पादक केंद्र</h2>
                         </div>
 
                         {/* Address */}
@@ -95,7 +95,7 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                     </div>
                     <div className="flex items-end gap-2">
                         <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">मोबाईल:</span>
-                        <span className="px-2 flex-grow">{customerMobile}</span>
+                        <span className="px-2 flex-grow">{customerMobile?.replace(/^\+91/, '')}</span>
                     </div>
                 </div>
             </div>
@@ -121,7 +121,7 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                                     <div className="text-xs text-gray-500">{format(new Date(tx.date), 'dd/MM/yyyy')}</div>
                                 </td>
                                 <td className="py-2 px-2 border-r border-black text-center">{tx.quantity || '-'}</td>
-                                <td className="py-2 px-2 border-r border-black text-center font-bold text-lg">{tx.rate || '-'}</td>
+                                <td className="py-2 px-2 border-r border-black text-center text-lg">{tx.rate || '-'}</td>
                                 <td className="py-2 px-2 text-center font-bold text-slate-800">
                                     {tx.debit > 0 ? formatCurrency(tx.debit) : (tx.credit > 0 ? `-${formatCurrency(tx.credit)}` : '-')}
                                 </td>
