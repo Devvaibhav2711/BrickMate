@@ -188,6 +188,7 @@ export const translations = {
     wagePaymentTo: 'Wage Payment to',
     productionBy: 'Production:',
     bricksBy: 'bricks by',
+    allWorkersList: 'List of all registered workers.',
     rateLabel: 'Rate:',
   },
   mr: {
@@ -199,6 +200,7 @@ export const translations = {
     wagePaymentTo: 'मजुरी दिली:',
     productionBy: 'उत्पादन:',
     bricksBy: 'विटा -',
+    allWorkersList: 'सर्व नोंदणीकृत कामगारांची यादी.',
     rateLabel: 'दर:',
 
     labour: 'कामगार',

@@ -42,7 +42,7 @@ export function ActiveWorkersDialog({ open, onOpenChange }: ActiveWorkersDialogP
                 <DialogHeader>
                     <DialogTitle>{t('activeWorkers')}</DialogTitle>
                     <DialogDescription>
-                        List of all registered workers.
+                        {t('allWorkersList')}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -79,7 +79,7 @@ export function ActiveWorkersDialog({ open, onOpenChange }: ActiveWorkersDialogP
                                                 <div className="text-xs text-muted-foreground">{worker.mobile}</div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline">{worker.work_type || 'Worker'}</Badge>
+                                                <Badge variant="outline">{worker.work_type ? t(worker.work_type.toLowerCase() as any) : t('worker')}</Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))}
