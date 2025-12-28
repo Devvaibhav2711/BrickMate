@@ -56,17 +56,17 @@ export const CustomerDetails = () => {
                 useCORS: true,
                 backgroundColor: '#ffffff'
             });
-            const image = canvas.toDataURL('image/jpeg', 0.9);
+            const image = canvas.toDataURL('image/png'); // PNG for better quality
 
             // Generate Filename
-            const fileName = `Statement_${customer?.name || 'Customer'}.jpg`;
-            const file = await (await fetch(image)).blob().then(blob => new File([blob], fileName, { type: 'image/jpeg' }));
+            const fileName = `Statement_${customer?.name || 'Customer'}.png`;
+            const file = await (await fetch(image)).blob().then(blob => new File([blob], fileName, { type: 'image/png' }));
 
             if (navigator.share && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
                     title: 'Payment Statement',
-                    text: `Statement for ${customer?.name}`
+                    // text removed to fix Android WhatsApp image sharing
                 });
             } else {
                 // Fallback Download

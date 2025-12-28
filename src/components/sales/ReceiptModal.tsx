@@ -133,24 +133,33 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     return;
                 }
 
-                const file = new File([blob], `receipt_${displayReceiptNo}.jpg`, { type: 'image/jpeg' });
+                const file = new File([blob], `receipt_${displayReceiptNo}.png`, { type: 'image/png' });
 
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt',
-                        text: `${isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt'} #${displayReceiptNo}
-${isMarathi ? 'एकूण रक्कम' : 'Total Amount'}: ₹${totalAmount}
-${isMarathi ? 'बाकी रक्कम' : 'Balance Due'}: ₹${balanceDue}`,
-                    });
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt',
+                            // text is removed to prioritize image sharing on Android/WhatsApp
+                        });
+                    } catch (shareError) {
+                        if ((shareError as Error).name !== 'AbortError') {
+                            console.error('Share failed:', shareError);
+                            // Fallback to download if share fails (but not if aborted by user)
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = `receipt_${displayReceiptNo}.png`;
+                            link.click();
+                        }
+                    }
                 } else {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
-                    link.download = `receipt_${displayReceiptNo}.jpg`;
+                    link.download = `receipt_${displayReceiptNo}.png`;
                     link.click();
                 }
                 setIsDownloading(false);
-            }, 'image/jpeg', 0.9);
+            }, 'image/png');
 
         } catch (error) {
             console.error('Error sharing:', error);
