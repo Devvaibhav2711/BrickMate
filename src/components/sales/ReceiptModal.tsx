@@ -161,9 +161,16 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     link.download = fileName;
                     link.click();
 
-                    const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
-                    window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
+                    let phone = customerMobile || '';
+                    phone = phone.replace(/\D/g, '');
+                    if (phone.length === 10) phone = '91' + phone;
 
+                    const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
+                    const url = phone
+                        ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
+                        : `https://web.whatsapp.com/send?text=${msg}`;
+
+                    window.open(url, '_blank');
                     toast.success(isMarathi ? "इमेज डाउनलोड झाली. कृपया व्हॉट्सॲपवर जोडा." : "Image Downloaded. Please attach on WhatsApp.", { duration: 5000 });
                 }
                 setIsDownloading(false);

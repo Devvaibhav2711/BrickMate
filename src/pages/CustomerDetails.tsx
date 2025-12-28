@@ -87,12 +87,11 @@ export const CustomerDetails = () => {
                     return;
                 }
 
-                const fileName = `Invoice_${customer?.name || 'Customer'}.jpg`;
-                const file = new File([blob], fileName, { type: 'image/jpeg' });
+                const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
 
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                // Mobile: Native Share
                 if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -103,28 +102,45 @@ export const CustomerDetails = () => {
                     } catch (err) {
                         if ((err as Error).name !== 'AbortError') {
                             console.error(err);
-                            // Fallback
-                            downloadAndOpenWhatsApp();
+                            await handleDesktopShare();
                         }
                     }
                 } else {
-                    // Desktop: Download + WhatsApp Web
-                    downloadAndOpenWhatsApp();
+                    await handleDesktopShare();
                 }
 
-                function downloadAndOpenWhatsApp() {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    link.click();
-
+                async function handleDesktopShare() {
                     const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice)`);
-                    window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
 
-                    toast.success("Image Downloaded. Please attach it on WhatsApp Web.", { id: toastId, duration: 6000 });
+                    let phone = customer?.mobile || '';
+                    phone = phone.replace(/\D/g, '');
+                    if (phone.length === 10) phone = '91' + phone;
+                    const url = phone
+                        ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
+                        : `https://web.whatsapp.com/send?text=${msg}`;
+
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({
+                                [blob!.type]: blob!
+                            })
+                        ]);
+                        window.open(url, '_blank');
+                        toast.success("Image Copied! Paste (Ctrl+V) in WhatsApp.", { id: toastId, duration: 6000 });
+                    } catch (e) {
+                        console.error("Clipboard failed", e);
+                        // Fallback
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob!);
+                        link.download = fileName;
+                        link.click();
+
+                        window.open(url, '_blank');
+                        toast.success("Image Downloaded. Please attach it on WhatsApp Web.", { id: toastId, duration: 6000 });
+                    }
                 }
                 setIsConverting(false);
-            }, 'image/jpeg', 0.8);
+            }, 'image/png');
 
 
         } catch (e) {
