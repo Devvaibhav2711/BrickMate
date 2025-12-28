@@ -133,12 +133,13 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     return;
                 }
 
-                const fileName = `receipt_${displayReceiptNo}.jpg`;
-                const file = new File([blob], fileName, { type: 'image/jpeg' });
+                const safeReceiptNo = displayReceiptNo.replace(/[^a-zA-Z0-9-]/g, '_');
+                const fileName = `receipt_${safeReceiptNo}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
 
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                if (isMobile && navigator.share) {
                     try {
                         await navigator.share({
                             files: [file],
@@ -148,33 +149,46 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     } catch (shareError) {
                         if ((shareError as Error).name !== 'AbortError') {
                             console.error('Share failed:', shareError);
-                            downloadAndOpenWhatsApp();
+                            await handleDesktopShare();
                         }
                     }
                 } else {
-                    downloadAndOpenWhatsApp();
+                    await handleDesktopShare();
                 }
 
-                function downloadAndOpenWhatsApp() {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    link.click();
-
+                async function handleDesktopShare() {
+                    const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
                     let phone = customerMobile || '';
                     phone = phone.replace(/\D/g, '');
                     if (phone.length === 10) phone = '91' + phone;
-
-                    const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
                     const url = phone
                         ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
                         : `https://web.whatsapp.com/send?text=${msg}`;
 
-                    window.open(url, '_blank');
-                    toast.success(isMarathi ? "इमेज डाउनलोड झाली. कृपया व्हॉट्सॲपवर जोडा." : "Image Downloaded. Please attach on WhatsApp.", { duration: 5000 });
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({
+                                [blob!.type]: blob!
+                            })
+                        ]);
+
+                        window.open(url, '_blank');
+                        toast.success(isMarathi ? "इमेज कॉपी झाली! व्हॉट्सॲपवर पेस्ट करा (Ctrl+V)." : "Image Copied! Paste (Ctrl+V) in WhatsApp.", { duration: 5000 });
+
+                    } catch (clipboardError) {
+                        console.error("Clipboard failed, falling back to download", clipboardError);
+
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob!);
+                        link.download = fileName;
+                        link.click();
+
+                        window.open(url, '_blank');
+                        toast.success(isMarathi ? "इमेज डाउनलोड झाली. कृपया व्हॉट्सॲपवर जोडा." : "Image Downloaded. Please attach on WhatsApp.", { duration: 5000 });
+                    }
                 }
                 setIsDownloading(false);
-            }, 'image/jpeg', 0.8);
+            });
 
         } catch (error) {
             console.error('Error sharing:', error);
