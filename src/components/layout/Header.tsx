@@ -1,12 +1,25 @@
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
-import { Languages } from 'lucide-react';
+import { Languages, LogOut } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const Header = () => {
   const { language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'mr' : 'en');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (error) {
+      toast.error('Error signing out');
+    }
   };
 
   return (
@@ -25,16 +38,28 @@ export const Header = () => {
             </p>
           </div>
         </div>
-        
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={toggleLanguage}
-          className="rounded-full"
-        >
-          <Languages className="w-5 h-5" />
-          <span className="sr-only">Toggle Language</span>
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggleLanguage}
+            className="rounded-full"
+          >
+            <Languages className="w-5 h-5" />
+            <span className="sr-only">Toggle Language</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handleLogout}
+            className="rounded-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="sr-only">Sign Out</span>
+          </Button>
+        </div>
       </div>
     </header>
   );

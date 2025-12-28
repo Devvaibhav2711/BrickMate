@@ -100,6 +100,7 @@ export const useAddProduction = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['production'] });
+      queryClient.invalidateQueries({ queryKey: ['labour'] }); // Update Labour Details (balance)
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast.success('Production added and recorded as Expense');
@@ -127,6 +128,7 @@ export const useUpdateProduction = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['production'] });
+      queryClient.invalidateQueries({ queryKey: ['labour'] });
       toast.success('Production record updated');
     },
     onError: (error) => {
@@ -149,6 +151,7 @@ export const useDeleteProduction = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['production'] });
+      queryClient.invalidateQueries({ queryKey: ['labour'] });
       toast.success('Record deleted');
     },
     onError: (error) => {

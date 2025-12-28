@@ -64,6 +64,7 @@ export const useMarkAttendance = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['attendance'] });
+            queryClient.invalidateQueries({ queryKey: ['labour'] }); // Update Labour Details (balance)
             // We don't toast on every checkbox click to avoid spam, maybe just silent success
         },
         onError: (error) => {

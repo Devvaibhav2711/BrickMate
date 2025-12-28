@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Labour } from './useLabour';
+import { Production } from './useProduction';
 
 export type TransactionType = 'advance' | 'payment' | 'attendance' | 'production';
 
@@ -12,26 +13,29 @@ export interface Transaction {
     description: string;
     isDebit: boolean; // true if money given to labour (increases balance/debt), false if earned (decreases debt)
 }
-
 export const useLabourDetails = (labourId: string | undefined) => {
     return useQuery({
         queryKey: ['labour', labourId],
         enabled: !!labourId,
         queryFn: async () => {
+            if (!labourId) throw new Error('Labour ID is required');
+            const id = labourId; // Explicit const for TS narrowing
+
             // Fetch Labour Profile
             const { data: labour, error: labourError } = await supabase
                 .from('labour')
                 .select('*')
-                .eq('id', labourId)
+                .eq('id', id)
                 .single();
 
             if (labourError) throw labourError;
+            if (!labour) throw new Error('Labour not found');
 
             // Fetch Advances
             const { data: advances, error: advError } = await supabase
                 .from('advance_payments')
                 .select('*')
-                .eq('labour_id', labourId)
+                .eq('labour_id', id)
                 .order('date', { ascending: false });
 
             if (advError) throw advError;
@@ -40,7 +44,7 @@ export const useLabourDetails = (labourId: string | undefined) => {
             const { data: payments, error: payError } = await supabase
                 .from('wage_payments')
                 .select('*')
-                .eq('labour_id', labourId)
+                .eq('labour_id', id)
                 .order('payment_date', { ascending: false });
 
             if (payError) throw payError;
@@ -49,7 +53,7 @@ export const useLabourDetails = (labourId: string | undefined) => {
             const { data: attendance, error: attError } = await supabase
                 .from('attendance')
                 .select('*')
-                .eq('labour_id', labourId)
+                .eq('labour_id', id)
                 .eq('is_present', true)
                 .order('date', { ascending: false });
 
@@ -59,10 +63,12 @@ export const useLabourDetails = (labourId: string | undefined) => {
             const { data: production, error: prodError } = await supabase
                 .from('brick_production')
                 .select('*')
-                .eq('labour_id', labourId)
+                .eq('labour_id', id)
                 .order('date', { ascending: false });
 
             if (prodError) throw prodError;
+
+            const productionData = production as unknown as Production[];
 
             // Calculate Transactions
             const transactions: Transaction[] = [];
@@ -105,7 +111,7 @@ export const useLabourDetails = (labourId: string | undefined) => {
             });
 
             // Add Production (Earnings)
-            production?.forEach(prod => {
+            productionData?.forEach(prod => {
                 const amount = (prod.quantity || 0) * (prod.rate_per_brick || 0);
                 if (amount > 0) {
                     transactions.push({
@@ -130,7 +136,7 @@ export const useLabourDetails = (labourId: string | undefined) => {
             return {
                 labour: labour as Labour,
                 transactions,
-                production, // Exposed raw production data
+                production: productionData, // Exposed raw production data
                 stats: {
                     totalGiven,
                     totalEarned,
