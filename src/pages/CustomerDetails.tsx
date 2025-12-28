@@ -49,38 +49,79 @@ export const CustomerDetails = () => {
     const handleShareImage = async (templateRef: HTMLDivElement | null) => {
         if (!templateRef) return;
         setIsConverting(true);
-        toast.loading("Generating High Quality Image...");
+        const toastId = toast.loading("Processing A4 Invoice...");
+
         try {
-            const canvas = await html2canvas(templateRef, {
-                scale: 2, // High resolution
+            // 1. Clone the element to ensure A4 size capture regardless of screen width
+            const clone = templateRef.cloneNode(true) as HTMLElement;
+            clone.style.position = 'fixed';
+            clone.style.top = '-10000px';
+            clone.style.left = '-10000px';
+            clone.style.width = '210mm'; // Force A4 Width
+            clone.style.height = 'auto'; // Allow height to expand
+            clone.style.minHeight = '297mm'; // Min A4 Height
+            clone.style.zIndex = '-9999';
+            clone.style.background = 'white';
+            clone.style.transform = 'none'; // distinct from screen
+
+            document.body.appendChild(clone);
+
+            // Wait for images/fonts
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const canvas = await html2canvas(clone, {
+                scale: 2, // Good quality for A4
                 useCORS: true,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                width: 794, // 210mm approx in pixels at 96 DPI (html2canvas uses pixels) - 794px is standard A4 width
+                windowWidth: 1000, // Simulate desktop window
             });
-            const image = canvas.toDataURL('image/png'); // PNG for better quality
 
-            // Generate Filename
-            const fileName = `Statement_${customer?.name || 'Customer'}.png`;
-            const file = await (await fetch(image)).blob().then(blob => new File([blob], fileName, { type: 'image/png' }));
+            document.body.removeChild(clone);
 
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Payment Statement',
-                    // text removed to fix Android WhatsApp image sharing
-                });
-            } else {
-                // Fallback Download
-                const link = document.createElement('a');
-                link.href = image;
-                link.download = fileName;
-                link.click();
-                toast.success("Image Downloaded");
-            }
+            // 2. Convert to Blob (better handling than DataURL for sharing)
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    toast.error("Failed to generate file", { id: toastId });
+                    setIsConverting(false);
+                    return;
+                }
+
+                const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
+                const file = new File([blob], fileName, { type: 'image/png' });
+
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Invoice',
+                            text: `Invoice #${receiptNo} for ${customer?.name}` // Caption often helps WhatsApp context
+                        });
+                        toast.success("Shared successfully", { id: toastId });
+                    } catch (err) {
+                        if ((err as Error).name !== 'AbortError') {
+                            console.error(err);
+                            // Fallback
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = fileName;
+                            link.click();
+                        }
+                    }
+                } else {
+                    // Fallback
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    toast.success("Downloaded (Sharing not supported)", { id: toastId });
+                }
+                setIsConverting(false);
+            }, 'image/png');
+
         } catch (e) {
             console.error(e);
-            toast.error("Failed to generate image");
-        } finally {
-            toast.dismiss();
+            toast.error("Failed to process invoice", { id: toastId });
             setIsConverting(false);
         }
     };
