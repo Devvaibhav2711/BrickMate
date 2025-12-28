@@ -52,7 +52,7 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
 
                         {/* Address */}
                         <div className="text-right text-sm text-gray-600">
-                            <p>मु. पो. कोळवाडी, ता. शिरुर, जि. पुणे</p>
+                            <p>मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
                             <p className="font-bold mt-1">मो. 9921915464 | 9075966464</p>
                             <p>Email: example@email.com</p>
                         </div>

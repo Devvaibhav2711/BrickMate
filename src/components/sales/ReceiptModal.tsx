@@ -135,7 +135,9 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
 
                 const file = new File([blob], `receipt_${displayReceiptNo}.png`, { type: 'image/png' });
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
@@ -146,7 +148,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     } catch (shareError) {
                         if ((shareError as Error).name !== 'AbortError') {
                             console.error('Share failed:', shareError);
-                            // Fallback to download if share fails (but not if aborted by user)
+                            // Fallback
                             const link = document.createElement('a');
                             link.href = URL.createObjectURL(blob);
                             link.download = `receipt_${displayReceiptNo}.png`;
@@ -154,10 +156,16 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                         }
                     }
                 } else {
+                    // Desktop Fallback: Download + WhatsApp Web
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
                     link.download = `receipt_${displayReceiptNo}.png`;
                     link.click();
+
+                    const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
+                    window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
+
+                    toast.success(isMarathi ? "इमेज डाउनलोड झाली. कृपया व्हॉट्सॲपवर जोडा." : "Image Downloaded. Please attach on WhatsApp.", { duration: 5000 });
                 }
                 setIsDownloading(false);
             }, 'image/png');

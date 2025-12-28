@@ -101,20 +101,30 @@ export const CustomerDetails = () => {
                     } catch (err) {
                         if ((err as Error).name !== 'AbortError') {
                             console.error(err);
-                            // Fallback
+                            // Fallback to Download + WhatsApp Web
                             const link = document.createElement('a');
                             link.href = URL.createObjectURL(blob);
                             link.download = fileName;
                             link.click();
+
+                            // Open WhatsApp Web with instruction
+                            const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice image)`);
+                            window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
+                            toast.success("Image Downloaded. Please attach it on WhatsApp.", { id: toastId, duration: 5000 });
                         }
                     }
                 } else {
-                    // Fallback
+                    // Fallback for Desktop (No Web Share API)
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
                     link.download = fileName;
                     link.click();
-                    toast.success("Downloaded (Sharing not supported)", { id: toastId });
+
+                    // Open WhatsApp Web
+                    const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice image)`);
+                    window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
+
+                    toast.success("Image Downloaded. Please attach it on WhatsApp.", { id: toastId, duration: 5000 });
                 }
                 setIsConverting(false);
             }, 'image/png');
@@ -284,7 +294,7 @@ export const CustomerDetails = () => {
             <div className="hidden print:block mb-8 text-black">
                 <div className="text-center border-b-2 border-black pb-4 mb-4">
                     <h1 className="text-3xl font-bold mb-2">विठुमाऊली वीट उत्पादक केंद्र</h1>
-                    <p className="text-sm">मु. पो. कोळवाडी, ता. शिरुर, जि. पुणे</p>
+                    <p className="text-sm">मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
                     <p className="text-sm font-bold mt-1">मो. 9921915464 | 9075966464</p>
                 </div>
                 <div className="flex justify-between items-end border-b border-gray-400 pb-4 mb-6">
