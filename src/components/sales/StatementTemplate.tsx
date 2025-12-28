@@ -46,15 +46,15 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                     <div className="flex justify-between items-center">
                         {/* Logo / Company Name */}
                         <div>
-                            <h1 className="text-2xl md:text-4xl print:text-4xl font-extrabold text-slate-900 tracking-tight">विठुमाऊली</h1>
+                            <h1 className="text-2xl md:text-4xl print:text-4xl font-extrabold text-slate-900 tracking-tight">माऊली</h1>
                             <h2 className="text-lg md:text-2xl print:text-2xl font-bold text-slate-700">वीट उत्पादक केंद्र</h2>
                         </div>
 
                         {/* Address */}
                         <div className="text-right text-xs md:text-sm print:text-sm text-gray-600">
-                            <p>मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
+                            <p className="font-bold text-slate-800 text-base">उद्धव वाघुलकर</p>
                             <p className="font-bold mt-1">मो. 9921915464 | 9075966464</p>
-                            <p>Email: example@email.com</p>
+                            <p className="mt-1">मु. पो. कोळवाडी, ता. शिरुर, जि. बीड</p>
                         </div>
                     </div>
 
@@ -73,13 +73,13 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                     <div>
                         <div className="flex items-end gap-2 mb-2 text-xs md:text-base print:text-base">
                             <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">पावती क्र.:</span>
-                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[80px] md:min-w-[100px] print:min-w-[100px]">{receiptNo || 'Total-LGR'}</span>
+                            <span className="px-2 min-w-[80px] md:min-w-[100px] print:min-w-[100px]">{receiptNo || 'Total-LGR'}</span>
                         </div>
                     </div>
                     <div>
                         <div className="flex items-end gap-2 mb-2 text-xs md:text-base print:text-base">
                             <span className="font-bold text-slate-800">दिनांक:</span>
-                            <span className="border-b-2 border-dotted border-gray-400 px-2 min-w-[90px] md:min-w-[120px] print:min-w-[120px]">{format(new Date(), 'dd/MM/yyyy')}</span>
+                            <span className="px-2 min-w-[90px] md:min-w-[120px] print:min-w-[120px]">{format(new Date(), 'dd/MM/yyyy')}</span>
                         </div>
                     </div>
                 </div>
@@ -87,47 +87,46 @@ export const StatementTemplate = forwardRef<HTMLDivElement, StatementTemplatePro
                 <div className="space-y-2 text-xs md:text-base print:text-base">
                     <div className="flex items-end gap-2">
                         <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">नाव:</span>
-                        <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow text-sm md:text-lg print:text-lg">{customerName}</span>
+                        <span className="px-2 flex-grow text-sm md:text-lg print:text-lg">{customerName}</span>
                     </div>
                     <div className="flex items-end gap-2">
                         <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">पत्ता:</span>
-                        <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow">{customerAddress || 'Please update address'}</span>
+                        <span className="px-2 flex-grow">{customerAddress || 'Please update address'}</span>
                     </div>
                     <div className="flex items-end gap-2">
                         <span className="font-bold text-slate-800 min-w-[50px] md:min-w-[60px] print:min-w-[60px]">मोबाईल:</span>
-                        <span className="border-b-2 border-dotted border-gray-400 px-2 flex-grow">{customerMobile}</span>
+                        <span className="px-2 flex-grow">{customerMobile}</span>
                     </div>
                 </div>
             </div>
 
             {/* Table */}
             <div className="px-2 md:px-8 print:px-8 mt-6">
-                <table className="w-full border-collapse">
+                <table className="w-full border-collapse border border-black">
                     <thead>
-                        <tr className="bg-slate-800 text-white text-xs md:text-base print:text-base" style={{ backgroundColor: '#1e293b', color: 'white', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
-                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[30px] md:w-[60px] print:w-[60px] text-center">अ.क्र.</th>
-                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 text-left">तपशील (Description)</th>
-                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[40px] md:w-[80px] print:w-[80px] text-center">नग</th>
-                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-slate-600 w-[50px] md:w-[100px] print:w-[100px] text-right">दर</th>
-                            <th className="py-3 px-1 md:px-2 print:px-2 w-[70px] md:w-[120px] print:w-[120px] text-right">रक्कम</th>
+                        <tr className="bg-slate-800 text-white text-xs md:text-base print:text-base border-b border-black" style={{ backgroundColor: '#1e293b', color: 'white', printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-black w-[30px] md:w-[60px] print:w-[60px] text-center">अ.क्र.</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-black text-left">तपशील (Description)</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-black w-[40px] md:w-[80px] print:w-[80px] text-center">नग</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 border-r border-black w-[50px] md:w-[100px] print:w-[100px] text-center">दर</th>
+                            <th className="py-3 px-1 md:px-2 print:px-2 w-[70px] md:w-[120px] print:w-[120px] text-center">रक्कम</th>
                         </tr>
                     </thead>
                     <tbody className="text-sm">
                         {transactions.map((tx, index) => (
-                            <tr key={index} className="border-b border-gray-200">
-                                <td className="py-2 px-2 border-r border-gray-300 text-center font-medium">{index + 1}</td>
-                                <td className="py-2 px-2 border-r border-gray-300">
+                            <tr key={index} className="border-b border-black">
+                                <td className="py-2 px-2 border-r border-black text-center font-medium">{index + 1}</td>
+                                <td className="py-2 px-2 border-r border-black">
                                     <div className="font-semibold text-slate-700">{tx.details}</div>
                                     <div className="text-xs text-gray-500">{format(new Date(tx.date), 'dd/MM/yyyy')}</div>
                                 </td>
-                                <td className="py-2 px-2 border-r border-gray-300 text-center">{tx.quantity || '-'}</td>
-                                <td className="py-2 px-2 border-r border-gray-300 text-right">{tx.rate ? formatCurrency(tx.rate) : '-'}</td>
-                                <td className="py-2 px-2 text-right font-bold text-slate-800">
+                                <td className="py-2 px-2 border-r border-black text-center">{tx.quantity || '-'}</td>
+                                <td className="py-2 px-2 border-r border-black text-center font-bold text-lg">{tx.rate || '-'}</td>
+                                <td className="py-2 px-2 text-center font-bold text-slate-800">
                                     {tx.debit > 0 ? formatCurrency(tx.debit) : (tx.credit > 0 ? `-${formatCurrency(tx.credit)}` : '-')}
                                 </td>
                             </tr>
                         ))}
-                        {/* Fill empty rows to make it look full page if needed, or just let it flow */}
                     </tbody>
                 </table>
             </div>

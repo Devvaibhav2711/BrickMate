@@ -17,6 +17,12 @@ import { formatCurrency } from '@/lib/utils';
 import { AddPaymentSheet } from '@/components/sales/AddPaymentSheet';
 import { StatementTemplate } from '@/components/sales/StatementTemplate';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import html2canvas from 'html2canvas';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -46,7 +52,7 @@ export const CustomerDetails = () => {
     const [isConverting, setIsConverting] = useState(false);
     const statementRef = useState<HTMLDivElement | null>(null);
 
-    const handleShareWhatsApp = async (templateRef: HTMLDivElement | null) => {
+    const handleShare = async (templateRef: HTMLDivElement | null, shareMode: 'native' | 'whatsapp') => {
         if (!templateRef) return;
         setIsConverting(true);
         const toastId = toast.loading("Processing Invoice...");
@@ -100,33 +106,27 @@ export const CustomerDetails = () => {
                     ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
                     : `https://web.whatsapp.com/send?text=${msg}`;
 
-                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-                let shareSuccess = false;
-
-                // Option A: Mobile Native Share (Target: WhatsApp via System Menu)
-                if (isMobile && navigator.share) {
-                    try {
-                        const shareData = {
-                            files: [file],
-                            title: 'Invoice',
-                        };
-
-                        if (navigator.canShare && navigator.canShare(shareData)) {
-                            await navigator.share(shareData);
-                            shareSuccess = true;
+                if (shareMode === 'native') {
+                    // Option A: Mobile Native Share
+                    if (navigator.share && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Invoice',
+                                text: msg
+                            });
                             toast.success("Shared!", { id: toastId });
+                        } catch (err) {
+                            if ((err as Error).name !== 'AbortError') {
+                                console.warn("Native share error:", err);
+                                toast.error("Share failed", { id: toastId });
+                            }
                         }
-                    } catch (err) {
-                        if ((err as Error).name !== 'AbortError') {
-                            console.warn("Native share error:", err);
-                        } else {
-                            shareSuccess = true; // User cancelled
-                        }
+                    } else {
+                        toast.error("Native sharing not supported capabilities on this device.", { id: toastId });
                     }
-                }
-
-                // Option B: Fallback (Clipboard - No Download)
-                if (!shareSuccess) {
+                } else {
+                    // Option B: WhatsApp specific (Copy + Link)
                     try {
                         await navigator.clipboard.write([
                             new ClipboardItem({ [blob.type]: blob })
@@ -135,7 +135,6 @@ export const CustomerDetails = () => {
                         toast.success("Image Copied! Paste (Ctrl+V) in WhatsApp", { id: toastId, duration: 6000 });
                     } catch (clipErr) {
                         console.error("Clipboard failed", clipErr);
-                        // NO DOWNLOAD - just open WhatsApp
                         window.open(waUrl, '_blank');
                         toast.error("Could not share automatically. Please use Download button.", { id: toastId });
                     }
@@ -495,12 +494,27 @@ export const CustomerDetails = () => {
                         }}>
                             <Download className="w-4 h-4 mr-2" /> Download
                         </Button>
-                        <Button className="bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isConverting} onClick={() => {
-                            const el = document.getElementById('pro-statement-template');
-                            if (el) handleShareWhatsApp(el as HTMLDivElement);
-                        }}>
-                            <Share2 className="w-4 h-4 mr-2" /> Share WhatsApp
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isConverting}>
+                                    <Share2 className="w-4 h-4 mr-2" /> Share Options
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => {
+                                    const el = document.getElementById('pro-statement-template');
+                                    if (el) handleShare(el as HTMLDivElement, 'native');
+                                }}>
+                                    Share via App...
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    const el = document.getElementById('pro-statement-template');
+                                    if (el) handleShare(el as HTMLDivElement, 'whatsapp');
+                                }}>
+                                    Share WhatsApp
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         {/* Hidden Print Button to trigger specific print */}
                         <button id="pro-statement-print-btn" className="hidden" onClick={() => {
                             // Print logic: we can use window.print() but we need to ensure styles target this modal content
