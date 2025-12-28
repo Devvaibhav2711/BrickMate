@@ -46,40 +46,38 @@ export const CustomerDetails = () => {
     const [isConverting, setIsConverting] = useState(false);
     const statementRef = useState<HTMLDivElement | null>(null);
 
-    const handleShareImage = async (templateRef: HTMLDivElement | null) => {
+    const handleShareWhatsApp = async (templateRef: HTMLDivElement | null) => {
         if (!templateRef) return;
         setIsConverting(true);
-        const toastId = toast.loading("Processing A4 Invoice...");
+        const toastId = toast.loading("Processing Invoice...");
 
         try {
-            // 1. Clone the element to ensure A4 size capture regardless of screen width
+            // 1. Clone element (Standard A4 Logic)
             const clone = templateRef.cloneNode(true) as HTMLElement;
             clone.style.position = 'fixed';
             clone.style.top = '-10000px';
             clone.style.left = '-10000px';
-            clone.style.width = '210mm'; // Force A4 Width
-            clone.style.height = 'auto'; // Allow height to expand
-            clone.style.minHeight = '297mm'; // Min A4 Height
+            clone.style.width = '210mm';
+            clone.style.height = 'auto';
+            clone.style.minHeight = '297mm';
             clone.style.zIndex = '-9999';
             clone.style.background = 'white';
-            clone.style.transform = 'none'; // distinct from screen
-
+            clone.style.transform = 'none';
             document.body.appendChild(clone);
 
-            // Wait for images/fonts
             await new Promise(resolve => setTimeout(resolve, 500));
 
             const canvas = await html2canvas(clone, {
-                scale: 2, // Good quality for A4
+                scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
-                width: 794, // 210mm approx in pixels at 96 DPI (html2canvas uses pixels) - 794px is standard A4 width
-                windowWidth: 1000, // Simulate desktop window
+                width: 794,
+                windowWidth: 1000,
             });
 
             document.body.removeChild(clone);
 
-            // 2. Convert to Blob (better handling than DataURL for sharing)
+            // 2. Convert to Blob
             canvas.toBlob(async (blob) => {
                 if (!blob) {
                     toast.error("Failed to generate file", { id: toastId });
@@ -90,68 +88,61 @@ export const CustomerDetails = () => {
                 const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
                 const file = new File([blob], fileName, { type: 'image/png' });
 
+                // Construct WhatsApp Link
+                let phone = customer?.mobile || '';
+                phone = phone.replace(/\D/g, '');
+                if (phone.length === 10) phone = '91' + phone;
+
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
+                // Option A: Mobile Native Share (Best for Apps)
                 if (isMobile && navigator.share) {
                     try {
                         const shareData = {
                             files: [file],
                             title: 'Invoice'
                         };
-
-                        if (navigator.canShare && !navigator.canShare(shareData)) {
-                            console.warn("navigator.canShare returned false, trying anyway...");
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                            toast.success("Shared successfully", { id: toastId });
+                            setIsConverting(false);
+                            return;
                         }
-
-                        await navigator.share(shareData);
-                        toast.success("Shared successfully", { id: toastId });
                     } catch (err) {
-                        if ((err as Error).name !== 'AbortError') {
-                            console.error(err);
-                            await handleDesktopShare();
-                        }
+                        console.warn("Native share failed, falling back...", err);
                     }
-                } else {
-                    await handleDesktopShare();
                 }
 
-                async function handleDesktopShare() {
-                    const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice)`);
+                // Option B: Desktop / Fallback (Clipboard + Web Link)
+                const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}.`);
+                const waUrl = phone
+                    ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
+                    : `https://web.whatsapp.com/send?text=${msg}`;
 
-                    let phone = customer?.mobile || '';
-                    phone = phone.replace(/\D/g, '');
-                    if (phone.length === 10) phone = '91' + phone;
-                    const url = phone
-                        ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
-                        : `https://web.whatsapp.com/send?text=${msg}`;
-
-                    try {
-                        await navigator.clipboard.write([
-                            new ClipboardItem({
-                                [blob!.type]: blob!
-                            })
-                        ]);
-                        window.open(url, '_blank');
-                        toast.success("Image Copied! Paste (Ctrl+V) in WhatsApp.", { id: toastId, duration: 6000 });
-                    } catch (e) {
-                        console.error("Clipboard failed", e);
-                        // Fallback
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob!);
-                        link.download = fileName;
-                        link.click();
-
-                        window.open(url, '_blank');
-                        toast.success("Image Downloaded. Please attach it on WhatsApp Web.", { id: toastId, duration: 6000 });
-                    }
+                try {
+                    // Try copying image to clipboard
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ [blob.type]: blob })
+                    ]);
+                    window.open(waUrl, '_blank');
+                    toast.success("Image Copied! PASTE (Ctrl+V) in WhatsApp", { id: toastId, duration: 6000 });
+                } catch (e) {
+                    console.error("Clipboard failed", e);
+                    // Absolute Fallback: Download
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    window.open(waUrl, '_blank');
+                    toast.success("Image Downloaded. Please attach in WhatsApp.", { id: toastId, duration: 6000 });
                 }
                 setIsConverting(false);
-            }, 'image/png');
 
+            }, 'image/png');
 
         } catch (e) {
             console.error(e);
-            toast.error("Failed to process invoice", { id: toastId });
+            toast.error("Process failed", { id: toastId });
             setIsConverting(false);
         }
     };
@@ -501,7 +492,7 @@ export const CustomerDetails = () => {
                         </Button>
                         <Button className="bg-[#25D366] hover:bg-[#128C7E] text-white" disabled={isConverting} onClick={() => {
                             const el = document.getElementById('pro-statement-template');
-                            if (el) handleShareImage(el as HTMLDivElement);
+                            if (el) handleShareWhatsApp(el as HTMLDivElement);
                         }}>
                             <Share2 className="w-4 h-4 mr-2" /> Share WhatsApp
                         </Button>
