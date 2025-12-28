@@ -87,47 +87,45 @@ export const CustomerDetails = () => {
                     return;
                 }
 
-                const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
-                const file = new File([blob], fileName, { type: 'image/png' });
+                const fileName = `Invoice_${customer?.name || 'Customer'}.jpg`;
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                // Mobile: Native Share
+                if (isMobile && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: 'Invoice',
-                            text: `Invoice #${receiptNo} for ${customer?.name}` // Caption often helps WhatsApp context
+                            title: 'Invoice'
                         });
                         toast.success("Shared successfully", { id: toastId });
                     } catch (err) {
                         if ((err as Error).name !== 'AbortError') {
                             console.error(err);
-                            // Fallback to Download + WhatsApp Web
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = fileName;
-                            link.click();
-
-                            // Open WhatsApp Web with instruction
-                            const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice image)`);
-                            window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
-                            toast.success("Image Downloaded. Please attach it on WhatsApp.", { id: toastId, duration: 5000 });
+                            // Fallback
+                            downloadAndOpenWhatsApp();
                         }
                     }
                 } else {
-                    // Fallback for Desktop (No Web Share API)
+                    // Desktop: Download + WhatsApp Web
+                    downloadAndOpenWhatsApp();
+                }
+
+                function downloadAndOpenWhatsApp() {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
                     link.download = fileName;
                     link.click();
 
-                    // Open WhatsApp Web
-                    const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice image)`);
+                    const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}. (Please attach the downloaded invoice)`);
                     window.open(`https://web.whatsapp.com/send?text=${msg}`, '_blank');
 
-                    toast.success("Image Downloaded. Please attach it on WhatsApp.", { id: toastId, duration: 5000 });
+                    toast.success("Image Downloaded. Please attach it on WhatsApp Web.", { id: toastId, duration: 6000 });
                 }
                 setIsConverting(false);
-            }, 'image/png');
+            }, 'image/jpeg', 0.8);
+
 
         } catch (e) {
             console.error(e);

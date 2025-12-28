@@ -133,7 +133,8 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     return;
                 }
 
-                const file = new File([blob], `receipt_${displayReceiptNo}.png`, { type: 'image/png' });
+                const fileName = `receipt_${displayReceiptNo}.jpg`;
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
 
                 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -141,25 +142,23 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     try {
                         await navigator.share({
                             files: [file],
-                            title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt',
-                            text: `${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`
+                            title: isMarathi ? 'विठुमाऊली वीट उत्पादक केद्र पावती' : 'BricksMate Receipt'
                         });
                         toast.success(isMarathi ? "शेअर केले!" : "Shared successfully!");
                     } catch (shareError) {
                         if ((shareError as Error).name !== 'AbortError') {
                             console.error('Share failed:', shareError);
-                            // Fallback
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = `receipt_${displayReceiptNo}.png`;
-                            link.click();
+                            downloadAndOpenWhatsApp();
                         }
                     }
                 } else {
-                    // Desktop Fallback: Download + WhatsApp Web
+                    downloadAndOpenWhatsApp();
+                }
+
+                function downloadAndOpenWhatsApp() {
                     const link = document.createElement('a');
                     link.href = URL.createObjectURL(blob);
-                    link.download = `receipt_${displayReceiptNo}.png`;
+                    link.download = fileName;
                     link.click();
 
                     const msg = encodeURIComponent(`${isMarathi ? 'पावती' : 'Receipt'} #${displayReceiptNo} - ${customerName || ''}`);
@@ -168,7 +167,7 @@ export const ReceiptModal = ({ isOpen, onClose, sale, customerName, customerMobi
                     toast.success(isMarathi ? "इमेज डाउनलोड झाली. कृपया व्हॉट्सॲपवर जोडा." : "Image Downloaded. Please attach on WhatsApp.", { duration: 5000 });
                 }
                 setIsDownloading(false);
-            }, 'image/png');
+            }, 'image/jpeg', 0.8);
 
         } catch (error) {
             console.error('Error sharing:', error);
