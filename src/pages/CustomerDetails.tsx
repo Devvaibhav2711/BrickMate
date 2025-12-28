@@ -77,7 +77,7 @@ export const CustomerDetails = () => {
 
             document.body.removeChild(clone);
 
-            // 2. Convert to Blob
+            // 2. Convert to Blob (JPEG)
             canvas.toBlob(async (blob) => {
                 if (!blob) {
                     toast.error("Failed to generate file", { id: toastId });
@@ -85,57 +85,62 @@ export const CustomerDetails = () => {
                     return;
                 }
 
-                const fileName = `Invoice_${customer?.name || 'Customer'}.png`;
+                const safeName = (customer?.name || 'Customer').replace(/[^a-z0-9]/gi, '_');
+                const fileName = `Invoice_${safeName}.png`;
+
                 const file = new File([blob], fileName, { type: 'image/png' });
 
-                // Construct WhatsApp Link
+                // Construct WhatsApp Link (for Fallback)
                 let phone = customer?.mobile || '';
                 phone = phone.replace(/\D/g, '');
                 if (phone.length === 10) phone = '91' + phone;
 
-                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-                // Option A: Mobile Native Share (Best for Apps)
-                if (isMobile && navigator.share) {
-                    try {
-                        const shareData = {
-                            files: [file],
-                            title: 'Invoice'
-                        };
-                        if (navigator.canShare && navigator.canShare(shareData)) {
-                            await navigator.share(shareData);
-                            toast.success("Shared successfully", { id: toastId });
-                            setIsConverting(false);
-                            return;
-                        }
-                    } catch (err) {
-                        console.warn("Native share failed, falling back...", err);
-                    }
-                }
-
-                // Option B: Desktop / Fallback (Clipboard + Web Link)
                 const msg = encodeURIComponent(`Invoice for ${customer?.name || 'Customer'}.`);
                 const waUrl = phone
                     ? `https://web.whatsapp.com/send?phone=${phone}&text=${msg}`
                     : `https://web.whatsapp.com/send?text=${msg}`;
 
-                try {
-                    // Try copying image to clipboard
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ [blob.type]: blob })
-                    ]);
-                    window.open(waUrl, '_blank');
-                    toast.success("Image Copied! PASTE (Ctrl+V) in WhatsApp", { id: toastId, duration: 6000 });
-                } catch (e) {
-                    console.error("Clipboard failed", e);
-                    // Absolute Fallback: Download
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    link.click();
-                    window.open(waUrl, '_blank');
-                    toast.success("Image Downloaded. Please attach in WhatsApp.", { id: toastId, duration: 6000 });
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                let shareSuccess = false;
+
+                // Option A: Mobile Native Share (Target: WhatsApp via System Menu)
+                if (isMobile && navigator.share) {
+                    try {
+                        const shareData = {
+                            files: [file],
+                            title: 'Invoice',
+                        };
+
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                            shareSuccess = true;
+                            toast.success("Shared!", { id: toastId });
+                        }
+                    } catch (err) {
+                        if ((err as Error).name !== 'AbortError') {
+                            console.warn("Native share error:", err);
+                        } else {
+                            shareSuccess = true; // User cancelled
+                        }
+                    }
                 }
+
+                // Option B: Fallback (Clipboard - No Download)
+                if (!shareSuccess) {
+                    try {
+                        await navigator.clipboard.write([
+                            new ClipboardItem({ [blob.type]: blob })
+                        ]);
+                        window.open(waUrl, '_blank');
+                        toast.success("Image Copied! Paste (Ctrl+V) in WhatsApp", { id: toastId, duration: 6000 });
+                    } catch (clipErr) {
+                        console.error("Clipboard failed", clipErr);
+                        // NO DOWNLOAD - just open WhatsApp
+                        window.open(waUrl, '_blank');
+                        toast.error("Could not share automatically. Please use Download button.", { id: toastId });
+                    }
+                }
+
                 setIsConverting(false);
 
             }, 'image/png');
