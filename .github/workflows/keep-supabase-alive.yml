@@ -11,12 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase Database
-        env:
-          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          curl -X GET "${SUPABASE_URL}/rest/v1/" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            -H "Content-Type: application/json"
-          echo "Supabase pinged successfully at $(date)"
+          # Ping the Supabase REST API to keep database alive
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X GET "https://gyadwqkgmsdilbzwramn.supabase.co/rest/v1/labour?select=id&limit=1" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5YWR3cWtnbXNkaWxiendyYW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM5OTEsImV4cCI6MjA4MzM1OTk5MX0.Fab4C1F1ZIbA_yhcte4vaZfoEpr6hlIAN-gTPol4v4w" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5YWR3cWtnbXNkaWxiendyYW1uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM5OTEsImV4cCI6MjA4MzM1OTk5MX0.Fab4C1F1ZIbA_yhcte4vaZfoEpr6hlIAN-gTPol4v4w" \
+            -H "Content-Type: application/json")
+          
+          echo "Response code: $response"
+          
+          if [ "$response" -eq 200 ] || [ "$response" -eq 204 ]; then
+            echo "✅ Supabase pinged successfully at $(date)"
+          else
+            echo "⚠️ Ping returned status $response"
+            exit 1
+          fi
+
+      - name: Log Success
+        run: echo "🎉 Supabase database kept alive - next ping in 5 days"

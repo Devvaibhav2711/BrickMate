@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +9,7 @@ import { YearProvider } from "@/contexts/YearContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { PageLoader } from "@/components/shared/LoadingSpinner";
+import { keepSupabaseAlive } from "@/lib/keepAlive";
 
 // Lazy load pages for code splitting - reduces initial bundle size
 const Index = lazy(() => import("./pages/Index"));
@@ -36,38 +37,45 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <YearProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppLayout>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/labour" element={<Labour />} />
-                    <Route path="/labour/:id" element={<LabourDetails />} />
-                    <Route path="/daily-workers" element={<DailyWorkers />} />
-                    <Route path="/production" element={<Production />} />
-                    <Route path="/customers" element={<Customers />} />
-                    <Route path="/customer/:id" element={<CustomerDetails />} />
-                    <Route path="/expenses" element={<Expenses />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Route>
-                </Routes>
-              </Suspense>
-            </AppLayout>
-          </BrowserRouter>
-        </TooltipProvider>
-      </YearProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Keep Supabase alive - runs automatically every 5 days
+  useEffect(() => {
+    keepSupabaseAlive();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <YearProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/labour" element={<Labour />} />
+                      <Route path="/labour/:id" element={<LabourDetails />} />
+                      <Route path="/daily-workers" element={<DailyWorkers />} />
+                      <Route path="/production" element={<Production />} />
+                      <Route path="/customers" element={<Customers />} />
+                      <Route path="/customer/:id" element={<CustomerDetails />} />
+                      <Route path="/expenses" element={<Expenses />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
+                  </Routes>
+                </Suspense>
+              </AppLayout>
+            </BrowserRouter>
+          </TooltipProvider>
+        </YearProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
