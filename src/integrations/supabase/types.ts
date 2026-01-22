@@ -356,7 +356,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_dashboard_stats: {
+        Args: {
+          p_start_date?: string | null
+          p_end_date?: string | null
+        }
+        Returns: {
+          totalBricks: number
+          totalSales: number
+          totalExpenses: number
+          netProfit: number
+          pendingPayments: number
+          activeWorkers: number
+          monthlyProduction: number
+          monthlySales: number
+          monthlyExpenses: number
+        }
+      }
     }
     Enums: {
       expense_category:

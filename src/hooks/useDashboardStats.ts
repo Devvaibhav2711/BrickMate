@@ -18,26 +18,44 @@ export const useDashboardStats = (year: string, startMonth: string) => {
     queryKey: ['dashboard-stats', year, startMonth],
     queryFn: async (): Promise<DashboardStats> => {
       const isAll = year === 'all';
-      let startDate: string | undefined;
-      let endDate: string | undefined;
+      let startDate: string | null = null;
+      let endDate: string | null = null;
 
       if (!isAll) {
         const y = parseInt(year);
         const m = parseInt(startMonth); // 0-11
-        // Start date: 1st of startMonth, year
         startDate = new Date(y, m, 1).toISOString().split('T')[0];
-        // End Date: 1st of startMonth, year + 1
         endDate = new Date(y + 1, m, 1).toISOString().split('T')[0];
       }
 
-      // Fetch data
+      // Try to use the optimized RPC function (single database call)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_dashboard_stats', {
+        p_start_date: startDate,
+        p_end_date: endDate,
+      });
+
+      // If RPC works, use it (much faster - single query)
+      if (!rpcError && rpcData) {
+        return {
+          totalBricks: Number(rpcData.totalBricks) || 0,
+          totalSales: Number(rpcData.totalSales) || 0,
+          totalExpenses: Number(rpcData.totalExpenses) || 0,
+          netProfit: Number(rpcData.netProfit) || 0,
+          pendingPayments: Number(rpcData.pendingPayments) || 0,
+          activeWorkers: Number(rpcData.activeWorkers) || 0,
+          monthlyProduction: Number(rpcData.monthlyProduction) || 0,
+          monthlySales: Number(rpcData.monthlySales) || 0,
+          monthlyExpenses: Number(rpcData.monthlyExpenses) || 0,
+        };
+      }
+
+      // Fallback to multiple queries if RPC not available
       let prodQuery = supabase.from('brick_production').select('quantity, date, labour_id');
       let salesQuery = supabase.from('sales').select('total_amount, amount_paid, payment_status, date');
       let expQuery = supabase.from('expenses').select('amount, date');
       let payQuery = supabase.from('customer_payments').select('amount, payment_date');
       let attQuery = supabase.from('attendance').select('labour_id, date');
 
-      // Apply filters if not 'all'
       if (!isAll && startDate && endDate) {
         prodQuery = prodQuery.gte('date', startDate).lt('date', endDate);
         salesQuery = salesQuery.gte('date', startDate).lt('date', endDate);
@@ -68,7 +86,6 @@ export const useDashboardStats = (year: string, startMonth: string) => {
       const payments = paymentsRes.data || [];
       const attendance = attendanceRes.data || [];
 
-      // Calculate totals
       const totalBricks = production.reduce((sum, p) => sum + (p.quantity || 0), 0);
       const totalSales = sales.reduce((sum, s) => sum + Number(s.total_amount || 0), 0);
       const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
@@ -77,7 +94,6 @@ export const useDashboardStats = (year: string, startMonth: string) => {
       const totalLedgerPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
       const pendingPayments = totalSales - (totalDirectPaid + totalLedgerPaid);
 
-      // Current Active Workers (Filtered by Activity in Period)
       let activeWorkersCount = labour.length;
       if (!isAll) {
         const activeIds = new Set<string>();
@@ -114,6 +130,9 @@ export const useDashboardStats = (year: string, startMonth: string) => {
         monthlyExpenses,
       };
     },
-    staleTime: 30000, // Cache for 30 seconds
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 };

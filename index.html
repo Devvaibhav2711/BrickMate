@@ -10,6 +10,37 @@
     <meta property="og:title" content="Bricksmate">
     <meta property="og:description" content="Bricksmate Application">
     <link rel="icon" type="image/png" href="/logo-new.png">
+    
+    <!-- Preconnect to Supabase for faster API calls -->
+    <link rel="preconnect" href="https://gyadwqkgmsdilbzwramn.supabase.co" crossorigin>
+    <link rel="dns-prefetch" href="https://gyadwqkgmsdilbzwramn.supabase.co">
+    
+    <!-- Inline critical loading styles to prevent flash -->
+    <style>
+      #root:empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #fafafa;
+      }
+      #root:empty::after {
+        content: "";
+        width: 48px;
+        height: 48px;
+        border: 3px solid #e5e7eb;
+        border-top-color: #ea580c;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      @media (prefers-color-scheme: dark) {
+        #root:empty { background: #1a1a1a; }
+        #root:empty::after { border-color: #374151; border-top-color: #ea580c; }
+      }
+    </style>
   </head>
 
   <body>
